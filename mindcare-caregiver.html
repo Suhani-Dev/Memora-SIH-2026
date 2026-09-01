@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindCare — Caregiver Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#F5F4EF;
+  --surface:#FFFFFF;
+  --ink:#1E2A28;
+  --muted:#66746F;
+  --line:#E3E0D6;
+  --teal:#2F6F62;
+  --teal-dim:#E7EFEC;
+  --amber:#B8862E;
+  --amber-dim:#F6EEDD;
+  --rust:#B5533C;
+  --rust-dim:#F6E7E2;
+  --radius:10px;
+  --focus:2px solid #2F6F62;
+}
+*{box-sizing:border-box;}
+body.reduced-motion *{animation:none !important; transition:none !important;}
+body{
+  margin:0;
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  font-size:15px;
+  line-height:1.5;
+}
+body.contrast{
+  --bg:#FFFFFF; --surface:#FFFFFF; --ink:#000000; --muted:#333333; --line:#000000;
+  --teal:#0B5C4A; --teal-dim:#DFF3EC; --amber:#7A5200; --amber-dim:#FBEFD2; --rust:#8A1F0E; --rust-dim:#F7DAD2;
+}
+body.large-text{ font-size:18px; }
+h1,h2,h3,h4{ font-family:'Source Serif 4',serif; margin:0 0 6px 0; font-weight:600; color:var(--ink); }
+a{color:inherit;}
+button{ font-family:inherit; cursor:pointer; }
+:focus-visible{ outline: var(--focus); outline-offset:2px; }
+.sr-only{ position:absolute; width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap; }
+
+/* ---------- App shell ---------- */
+#app{ display:flex; min-height:100vh; }
+.topbar{
+  position:fixed; top:0; left:0; right:0; height:60px;
+  background:var(--surface); border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 18px; z-index:40;
+}
+.brand{ display:flex; align-items:center; gap:10px; font-family:'Source Serif 4',serif; font-weight:600; font-size:20px; }
+.brand .mark{ width:26px;height:26px;border-radius:7px;background:var(--teal); display:inline-block; }
+.topbar-right{ display:flex; align-items:center; gap:14px; }
+.icon-btn{ background:none;border:1px solid var(--line);border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;position:relative; }
+.icon-btn .dot{ position:absolute; top:5px; right:5px; width:8px;height:8px;border-radius:50%;background:var(--rust); }
+select.select{ border:1px solid var(--line); border-radius:8px; background:var(--surface); padding:8px 10px; font-family:inherit; color:var(--ink); font-size:14px; }
+.profile-btn{ display:flex; align-items:center; gap:8px; background:none; border:none; padding:4px; }
+.avatar{ width:32px;height:32px;border-radius:50%; background:var(--teal-dim); color:var(--teal); display:flex;align-items:center;justify-content:center; font-weight:600; font-size:13px; }
+
+.sidebar{
+  position:fixed; top:60px; bottom:0; left:0; width:210px;
+  background:var(--surface); border-right:1px solid var(--line);
+  padding:14px 10px; overflow-y:auto; z-index:30;
+}
+.nav-item{
+  display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+  padding:10px 12px; border-radius:8px; border:none; background:none;
+  color:var(--muted); font-size:14.5px; font-weight:500; margin-bottom:2px;
+}
+.nav-item .glyph{ width:18px; text-align:center; }
+.nav-item[aria-current="page"]{ background:var(--teal-dim); color:var(--teal); }
+.nav-item:hover{ background:var(--bg); }
+
+main#content{ margin-left:210px; margin-top:60px; padding:22px 26px 60px; width:100%; }
+
+.status-bar{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); margin-bottom:14px; }
+.status-dot{ width:8px;height:8px;border-radius:50%; background:var(--teal); }
+.status-dot.off{ background:var(--rust); }
+.sync-pill{ background:var(--amber-dim); color:var(--amber); padding:3px 9px; border-radius:20px; font-size:12.5px; font-weight:600; }
+
+.page{ display:none; }
+.page.active{ display:block; }
+
+/* ---------- Cards / grid ---------- */
+.grid{ display:grid; gap:16px; }
+.grid.kpis{ grid-template-columns:repeat(6,1fr); }
+.grid.two{ grid-template-columns:1.3fr 1fr; }
+.grid.games{ grid-template-columns:repeat(3,1fr); }
+.card{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  padding:16px 18px;
+}
+.card h3{ font-size:16px; }
+.kpi .label{ font-size:12.5px; color:var(--muted); text-transform:none; margin-bottom:6px; }
+.kpi .value{ font-size:26px; font-weight:700; font-family:'Source Serif 4',serif; }
+.trend{ font-size:12.5px; font-weight:600; margin-top:4px; }
+.trend.up{ color:var(--teal); }
+.trend.down{ color:var(--rust); }
+.trend.flat{ color:var(--muted); }
+
+.patient-card{ display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; }
+.patient-id{ font-family:'Source Serif 4',serif; font-size:22px; font-weight:700; }
+.patient-meta{ display:flex; gap:26px; flex-wrap:wrap; margin-top:10px; }
+.patient-meta div .k{ font-size:12px; color:var(--muted); }
+.patient-meta div .v{ font-size:14.5px; font-weight:600; }
+.btn{ border:1px solid var(--teal); background:var(--teal); color:#fff; padding:9px 16px; border-radius:8px; font-weight:600; font-size:14px; }
+.btn.secondary{ background:none; color:var(--teal); }
+.btn.ghost{ background:none; border-color:var(--line); color:var(--ink); }
+.btn.small{ padding:6px 11px; font-size:13px; }
+
+.section-title{ margin:26px 0 10px; }
+.chart-wrap{ position:relative; height:230px; }
+.explain{ font-size:13.5px; color:var(--muted); margin-top:10px; }
+
+.game-card .row{ display:flex; justify-content:space-between; margin-top:8px; font-size:13.5px; }
+.game-card .row span:first-child{ color:var(--muted); }
+
+.diff-track{ display:flex; align-items:center; gap:6px; margin:14px 0; flex-wrap:wrap; }
+.diff-step{ padding:6px 12px; border-radius:20px; font-size:12.5px; font-weight:600; background:var(--bg); color:var(--muted); border:1px solid var(--line); }
+.diff-step.current{ background:var(--teal); color:#fff; border-color:var(--teal); }
+.diff-arrow{ color:var(--muted); }
+
+.insight-card{ border-left:3px solid var(--teal); }
+.insight-card .tag{ font-size:12px; color:var(--teal); font-weight:600; margin-bottom:6px; }
+.why-btn{ background:none; border:none; color:var(--teal); font-size:13px; font-weight:600; padding:0; margin-top:8px; }
+.why-list{ display:none; margin-top:10px; padding-left:18px; font-size:13.5px; color:var(--muted); }
+.why-list.open{ display:block; }
+
+.alert{ display:flex; gap:12px; padding:14px; border-radius:8px; border:1px solid var(--line); margin-bottom:10px; align-items:flex-start; }
+.alert.unread{ background:var(--amber-dim); border-color:var(--amber); }
+.alert .abadge{ font-size:11.5px; font-weight:700; padding:2px 8px; border-radius:20px; background:var(--bg); color:var(--muted); }
+.alert-body{ flex:1; }
+.alert-actions{ display:flex; gap:8px; margin-top:8px; }
+
+table.hist{ width:100%; border-collapse:collapse; font-size:13.5px; }
+table.hist th{ text-align:left; color:var(--muted); font-weight:600; padding:8px 10px; border-bottom:1px solid var(--line); font-size:12.5px; }
+table.hist td{ padding:9px 10px; border-bottom:1px solid var(--line); }
+.filters{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+
+.reminder-card{ display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border:1px solid var(--line); border-radius:8px; margin-bottom:8px; }
+.reminder-card .when{ font-size:12.5px; color:var(--muted); }
+.form-row{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+.form-field{ display:flex; flex-direction:column; gap:5px; }
+.form-field label{ font-size:12.5px; color:var(--muted); font-weight:600; }
+.form-field input, .form-field select{ padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-family:inherit; }
+
+.settings-block{ margin-bottom:22px; }
+.toggle-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); }
+.switch{ position:relative; width:42px; height:24px; }
+.switch input{ opacity:0; width:0;height:0; }
+.slider{ position:absolute; inset:0; background:var(--line); border-radius:20px; transition:.15s; }
+.slider:before{ content:""; position:absolute; height:18px;width:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.15s; }
+.switch input:checked + .slider{ background:var(--teal); }
+.switch input:checked + .slider:before{ transform:translateX(18px); }
+
+.empty{ text-align:center; padding:50px 20px; color:var(--muted); }
+.empty h4{ color:var(--ink); margin-bottom:6px; }
+.skeleton{ background:linear-gradient(90deg,var(--line) 25%,var(--bg) 37%,var(--line) 63%); background-size:400% 100%; animation:shimmer 1.4s infinite; border-radius:8px; height:100px; }
+@keyframes shimmer{ 0%{background-position:100% 0;} 100%{background-position:0 0;} }
+
+/* mobile drawer */
+.drawer-toggle{ display:none; }
+@media (max-width:880px){
+  .grid.kpis{ grid-template-columns:repeat(2,1fr); }
+  .grid.two{ grid-template-columns:1fr; }
+  .grid.games{ grid-template-columns:1fr; }
+  .sidebar{ transform:translateX(-100%); transition:transform .2s; width:220px; }
+  .sidebar.open{ transform:translateX(0); box-shadow:2px 0 10px rgba(0,0,0,.15); }
+  main#content{ margin-left:0; }
+  .drawer-toggle{ display:flex; }
+  table.hist thead{ display:none; }
+  table.hist, table.hist tbody, table.hist tr, table.hist td{ display:block; width:100%; }
+  table.hist tr{ border:1px solid var(--line); border-radius:8px; margin-bottom:10px; padding:8px; }
+  table.hist td{ border:none; display:flex; justify-content:space-between; padding:4px 4px; }
+  table.hist td:before{ content:attr(data-label); color:var(--muted); font-weight:600; font-size:12px; }
+}
+@media print{
+  .sidebar, .topbar, .drawer-toggle, .icon-btn, nav{ display:none !important; }
+  main#content{ margin:0; padding:0; }
+  .page{ display:none !important; }
+  .page#page-reports{ display:block !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="icon-btn drawer-toggle" id="drawerToggle" aria-label="Open navigation menu" aria-expanded="false">☰</button>
+      <div class="brand"><span class="mark" aria-hidden="true"></span> MindCare</div>
+    </div>
+    <div class="topbar-right">
+      <select class="select" id="patientSelect" aria-label="Selected patient"></select>
+      <select class="select" id="langSelect" aria-label="Caregiver language">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="as">অসমীয়া</option>
+      </select>
+      <button class="icon-btn" id="bellBtn" aria-label="Notifications, 2 unread">🔔<span class="dot"></span></button>
+      <button class="profile-btn" id="profileBtn" aria-label="Caregiver profile menu">
+        <span class="avatar">RA</span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="sidebar" id="sidebar" aria-label="Main navigation">
+    <button class="nav-item" data-page="dashboard" aria-current="page"><span class="glyph">🏠</span><span data-i18n="nav_dashboard">Dashboard</span></button>
+    <button class="nav-item" data-page="history"><span class="glyph">📜</span><span data-i18n="nav_history">Game History</span></button>
+    <button class="nav-item" data-page="reports"><span class="glyph">📊</span><span data-i18n="nav_reports">Reports</span></button>
+    <button class="nav-item" data-page="alerts"><span class="glyph">⚠️</span><span data-i18n="nav_alerts">Alerts</span></button>
+    <button class="nav-item" data-page="reminders"><span class="glyph">⏰</span><span data-i18n="nav_reminders">Reminders</span></button>
+    <button class="nav-item" data-page="settings"><span class="glyph">⚙️</span><span data-i18n="nav_settings">Settings</span></button>
+    <button class="nav-item" data-page="privacy"><span class="glyph">🔒</span><span data-i18n="nav_privacy">Privacy</span></button>
+  </nav>
+
+  <main id="content">
+
+    <div class="status-bar">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Online</span>
+      <span class="sync-pill" id="syncPill" style="display:none;"></span>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section class="page active" id="page-dashboard">
+      <h2 id="greeting">Good evening</h2>
+      <p class="explain" id="subGreeting">Here's the latest activity for MC-1001.</p>
+
+      <div class="card patient-card" style="margin-top:14px;" id="patientCard"></div>
+
+      <h3 class="section-title" data-i18n="performance">Performance</h3>
+      <div class="grid kpis" id="kpiRow"></div>
+
+      <div class="grid two" style="margin-top:16px;">
+        <div class="card">
+          <h3 data-i18n="perf_trend">Performance Over Time</h3>
+          <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+          <p class="explain" id="trendExplain"></p>
+        </div>
+        <div class="card">
+          <h3>AI Recommendation</h3>
+          <div id="dashRecommendation"></div>
+        </div>
+      </div>
+
+      <h3 class="section-title">Game Performance</h3>
+      <div class="grid games" id="gameCards"></div>
+
+      <div class="grid two" style="margin-top:16px;">
+        <div class="card">
+          <h3>Game Comparison</h3>
+          <div class="chart-wrap"><canvas id="compareChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Difficulty Progression</h3>
+          <div class="diff-track" id="diffTrack"></div>
+          <p class="explain">Difficulty was increased after consistent performance across multiple sessions.</p>
+        </div>
+      </div>
+
+      <h3 class="section-title">MindCare AI Insights</h3>
+      <div class="grid two" id="insightCards"></div>
+
+      <h3 class="section-title">Alerts</h3>
+      <div id="dashAlerts"></div>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="page" id="page-history">
+      <h2>Game History</h2>
+      <div class="filters">
+        <select class="select" id="filterGame"><option value="">All games</option></select>
+        <select class="select" id="filterDifficulty"><option value="">All difficulties</option><option>Easy</option><option>Medium</option><option>Hard</option></select>
+        <select class="select" id="filterStatus"><option value="">All statuses</option><option>Completed</option><option>Incomplete</option></select>
+        <input type="date" class="select" id="filterDate">
+      </div>
+      <div class="card">
+        <table class="hist" id="histTable">
+          <thead><tr><th>Date</th><th>Game</th><th>Score</th><th>Accuracy</th><th>Time</th><th>Difficulty</th><th>Status</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REPORTS -->
+    <section class="page" id="page-reports">
+      <h2>Weekly Cognitive Activity Report</h2>
+      <div class="filters">
+        <select class="select" id="reportRange">
+          <option value="week">This week</option>
+          <option value="lastweek">Last week</option>
+          <option value="30">Last 30 days</option>
+        </select>
+        <button class="btn secondary" id="printBtn">Download Report</button>
+      </div>
+      <div class="grid kpis" id="reportKpis"></div>
+      <div class="grid two" style="margin-top:16px;">
+        <div class="card"><h3>Weekly Trend</h3><div class="chart-wrap"><canvas id="reportTrendChart"></canvas></div></div>
+        <div class="card"><h3>Game Performance</h3><div class="chart-wrap"><canvas id="reportCompareChart"></canvas></div></div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <h3>AI Recommendations</h3>
+        <div id="reportRecs"></div>
+      </div>
+    </section>
+
+    <!-- ALERTS -->
+    <section class="page" id="page-alerts">
+      <h2>Alert Center</h2>
+      <div id="alertList"></div>
+    </section>
+
+    <!-- REMINDERS -->
+    <section class="page" id="page-reminders">
+      <h2>Reminders</h2>
+      <div class="card" style="margin-bottom:16px;">
+        <h3>New activity reminder</h3>
+        <div class="form-row">
+          <div class="form-field"><label for="remGame">Activity</label>
+            <select id="remGame" class="select"></select></div>
+          <div class="form-field"><label for="remDate">Date</label><input type="date" id="remDate"></div>
+          <div class="form-field"><label for="remTime">Time</label><input type="time" id="remTime" value="18:00"></div>
+          <div class="form-field"><label for="remRepeat">Repeat</label>
+            <select id="remRepeat" class="select"><option>Once</option><option>Daily</option><option>Weekly</option></select></div>
+        </div>
+        <button class="btn" id="addReminderBtn">Add reminder</button>
+      </div>
+      <h3>Upcoming reminders</h3>
+      <div id="reminderList"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="page" id="page-settings">
+      <h2>Settings</h2>
+      <div class="settings-block card">
+        <h3>Account</h3>
+        <div class="form-row">
+          <div class="form-field"><label>Display name</label><input class="select" value="Riya A."></div>
+          <div class="form-field"><label>Email</label><input class="select" value="riya.caregiver@example.com"></div>
+        </div>
+      </div>
+      <div class="settings-block card">
+        <h3>Patient Preferences</h3>
+        <div class="toggle-row"><span>Voice assistance</span>
+          <label class="switch"><input type="checkbox" id="voiceToggle" checked><span class="slider"></span></label></div>
+        <div class="form-row" style="margin-top:10px;">
+          <div class="form-field"><label>Patient language</label>
+            <select class="select" id="patientLangSelect"><option value="en">English</option><option value="hi">Hindi</option><option value="as">Assamese</option></select></div>
+          <div class="form-field"><label>Voice</label><select class="select"><option>System default</option></select></div>
+        </div>
+        <button class="btn ghost small" id="testVoiceBtn" style="margin-top:10px;">Test voice</button>
+        <p class="explain" id="voiceStatus"></p>
+      </div>
+      <div class="settings-block card">
+        <h3>Difficulty Mode</h3>
+        <div class="toggle-row"><span>Auto mode</span>
+          <label class="switch"><input type="checkbox" id="autoModeToggle" checked><span class="slider"></span></label></div>
+        <p class="explain">When off, AI difficulty changes require caregiver approval.</p>
+      </div>
+      <div class="settings-block card">
+        <h3>Accessibility</h3>
+        <div class="toggle-row"><span>Large text</span>
+          <label class="switch"><input type="checkbox" id="largeTextToggle"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span>High contrast</span>
+          <label class="switch"><input type="checkbox" id="contrastToggle"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span>Reduced motion</span>
+          <label class="switch"><input type="checkbox" id="motionToggle"><span class="slider"></span></label></div>
+      </div>
+    </section>
+
+    <!-- PRIVACY -->
+    <section class="page" id="page-privacy">
+      <h2>Privacy</h2>
+      <div class="card">
+        <h3>Patient Data</h3>
+        <p class="explain">MindCare uses anonymous patient IDs and collects only the information required for cognitive activity tracking.</p>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <h3>Local Data Management</h3>
+        <p class="explain">This will remove locally stored MindCare data from this device. Server-side records are not affected.</p>
+        <button class="btn ghost small" id="clearLocalBtn" style="margin-top:8px;">Clear local data</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+/* =========================================================
+   MOCK DATA / SERVICE LAYER
+   (designed so each function can later be swapped for a
+    real fetch() call to a Flask/FastAPI endpoint)
+   ========================================================= */
+const patientService = {
+  patients: [
+    { id:"MC-1001", ageGroup:"60–70", language:"Assamese", difficulty:"Medium", sessions:24, lastActivity:"Today",
+      trend:[65,68,70,73,76,78], difficultyPath:["Easy","Easy","Easy","Medium","Medium"] },
+    { id:"MC-1002", ageGroup:"70–80", language:"Hindi", difficulty:"Easy", sessions:14, lastActivity:"Yesterday",
+      trend:[60,62,61,63,65,66], difficultyPath:["Easy","Easy","Easy","Easy","Easy"] },
+    { id:"MC-1003", ageGroup:"65–75", language:"English", difficulty:"Medium", sessions:31, lastActivity:"2 days ago",
+      trend:[72,69,64,59,54,52], difficultyPath:["Easy","Medium","Medium","Medium","Medium"] },
+  ],
+  getPatients(){ return this.patients; },
+  getPatient(id){ return this.patients.find(p=>p.id===id); }
+};
+
+const gameDefs = ["Memory Match","Sequence Recall","Pattern Recognition","Attention","Object Recognition"];
+
+const performanceService = {
+  gameStats(patientId){
+    const seed = patientId.slice(-1).charCodeAt(0);
+    return gameDefs.map((g,i)=>{
+      const base = 90 - i*5 - (seed%3)*2;
+      return { game:g, accuracy: base, avgScore:(base/10).toFixed(1), sessions: 4+i, trend: base>70?"up":(base>60?"flat":"down") };
+    });
+  },
+  responseTimes(){ return [8.2,7.8,7.4,6.9,6.4]; },
+  kpis(patient){
+    const declining = patient.trend[patient.trend.length-1] < patient.trend[0];
+    return [
+      { label:"Overall Performance", value: patient.trend[patient.trend.length-1]+"%", trend: declining?"down":"up" },
+      { label:"Accuracy", value:"78%", trend:"up" },
+      { label:"Completion Rate", value:"91%", trend:"flat" },
+      { label:"Avg Response Time", value:"6.4 sec", trend:"up" },
+      { label:"Total Sessions", value:String(patient.sessions), trend:"flat" },
+      { label:"Playing Time", value:"3h 42m", trend:"flat" },
+    ];
+  }
+};
+
+const analyticsService = {
+  recommendations(patient){
+    const declining = patient.trend[patient.trend.length-1] < patient.trend[0];
+    return {
+      recommendation: declining
+        ? "Recent performance has declined slightly. Consider shorter, more frequent sessions."
+        : "Recent performance has been consistently strong in Memory Match. Consider continuing this activity.",
+      difficulty: `${patient.difficulty} difficulty appears appropriate based on recent performance.`,
+      engagement: "Memory Match has the highest completion rate among recent activities.",
+      trendNote: declining
+        ? "Overall performance has declined across the last sessions."
+        : "Overall performance has improved across the last 5 sessions.",
+      why: ["Last 5 sessions","Accuracy above 80%","Stable response time","High completion rate"],
+      declining
+    };
+  }
+};
+
+const alertService = {
+  alerts(patient){
+    const rec = analyticsService.recommendations(patient);
+    const list = [
+      { type:"Difficulty", date:"Sep 1", desc:"AI recommends reviewing current difficulty.", read:false },
+      { type:"Reminder", date:"Sep 1", desc:"Scheduled cognitive activity reminder.", read:true },
+      { type:"Engagement", date:"Aug 30", desc:"Game completion rate has decreased slightly.", read:true },
+    ];
+    if (rec.declining){
+      list.unshift({ type:"Performance", date:"Sep 1", desc:"Recent game performance has declined across multiple sessions. Please review the patient's recent activity.", read:false });
+    }
+    return list;
+  }
+};
+
+const historyService = {
+  sessions(patientId){
+    const rows = [
+      { date:"Sep 1", game:"Memory Match", score:"8/10", accuracy:"80%", time:"2:14", difficulty:"Medium", status:"Completed" },
+      { date:"Aug 31", game:"Pattern Recognition", score:"7/10", accuracy:"70%", time:"3:01", difficulty:"Medium", status:"Completed" },
+      { date:"Aug 30", game:"Attention", score:"6/10", accuracy:"60%", time:"2:47", difficulty:"Easy", status:"Completed" },
+      { date:"Aug 29", game:"Sequence Recall", score:"5/10", accuracy:"50%", time:"3:32", difficulty:"Easy", status:"Incomplete" },
+      { date:"Aug 28", game:"Object Recognition", score:"9/10", accuracy:"90%", time:"1:58", difficulty:"Medium", status:"Completed" },
+    ];
+    return rows;
+  }
+};
+
+const reminderService = {
+  _key(pid){ return "mindcare_reminders_"+pid; },
+  list(pid){
+    const raw = storageService.get(this._key(pid));
+    if (raw) return raw;
+    const def = [
+      { game:"Memory Match", date:"2026-09-01", time:"18:00", repeat:"Daily", enabled:true },
+      { game:"Pattern Recognition", date:"2026-09-02", time:"10:00", repeat:"Once", enabled:true },
+    ];
+    storageService.set(this._key(pid), def);
+    return def;
+  },
+  add(pid, reminder){
+    const l = this.list(pid); l.push(reminder); storageService.set(this._key(pid), l); return l;
+  },
+  remove(pid, idx){
+    const l = this.list(pid); l.splice(idx,1); storageService.set(this._key(pid), l); return l;
+  },
+  toggle(pid, idx){
+    const l = this.list(pid); l[idx].enabled = !l[idx].enabled; storageService.set(this._key(pid), l); return l;
+  }
+};
+
+const storageService = {
+  get(key){ try{ const v = localStorage.getItem(key); return v?JSON.parse(v):null; }catch(e){ return null; } },
+  set(key,val){ try{ localStorage.setItem(key, JSON.stringify(val)); return true; }catch(e){ return false; } },
+  clear(){ Object.keys(localStorage).filter(k=>k.startsWith("mindcare_")).forEach(k=>localStorage.removeItem(k)); }
+};
+
+/* -------- translations (minimal inline "locale files") -------- */
+const translations = {
+  en:{ nav_dashboard:"Dashboard", nav_history:"Game History", nav_reports:"Reports", nav_alerts:"Alerts",
+       nav_reminders:"Reminders", nav_settings:"Settings", nav_privacy:"Privacy", performance:"Performance",
+       perf_trend:"Performance Over Time" },
+  hi:{ nav_dashboard:"डैशबोर्ड", nav_history:"गेम इतिहास", nav_reports:"रिपोर्ट", nav_alerts:"अलर्ट",
+       nav_reminders:"रिमाइंडर", nav_settings:"सेटिंग्स", nav_privacy:"गोपनीयता", performance:"प्रदर्शन",
+       perf_trend:"समय के साथ प्रदर्शन" },
+  as:{ nav_dashboard:"ডেছবÓৰ্ড", nav_history:"গেম ইতিহাস", nav_reports:"প্ৰতিবেদন", nav_alerts:"সতৰ্কবাণী",
+       nav_reminders:"ৰিমাইণ্ডাৰ", nav_settings:"ছেটিং", nav_privacy:"গোপনীয়তা", performance:"প্ৰদৰ্শন",
+       perf_trend:"সময়ৰ সৈতে প্ৰদৰ্শন" }
+};
+function t(key){
+  const lang = storageService.get("mindcare_caregiver_lang") || "en";
+  return (translations[lang] && translations[lang][key]) || translations.en[key] || key;
+}
+function applyTranslations(){
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    el.textContent = t(el.getAttribute("data-i18n"));
+  });
+}
+
+/* =========================================================
+   STATE
+   ========================================================= */
+let state = {
+  patientId: storageService.get("mindcare_selected_patient") || "MC-1001",
+  online: navigator.onLine
+};
+let charts = {}; // holds Chart.js instances for cleanup
+
+function currentPatient(){ return patientService.getPatient(state.patientId); }
+
+/* =========================================================
+   RENDER: DASHBOARD
+   ========================================================= */
+function renderDashboard(){
+  const p = currentPatient();
+  const hour = new Date().getHours();
+  document.getElementById("greeting").textContent = hour<12?"Good morning":(hour<18?"Good afternoon":"Good evening");
+  document.getElementById("subGreeting").textContent = `Here's the latest activity for ${p.id}.`;
+
+  document.getElementById("patientCard").innerHTML = `
+    <div>
+      <div class="patient-id">${p.id}</div>
+      <div class="patient-meta">
+        <div><div class="k">Age group</div><div class="v">${p.ageGroup}</div></div>
+        <div><div class="k">Preferred language</div><div class="v">${p.language}</div></div>
+        <div><div class="k">Current difficulty</div><div class="v">${p.difficulty}</div></div>
+        <div><div class="k">Total sessions</div><div class="v">${p.sessions}</div></div>
+        <div><div class="k">Last activity</div><div class="v">${p.lastActivity}</div></div>
+      </div>
+    </div>
+    <button class="btn secondary small" data-page="history">View full history</button>
+  `;
+
+  const kpis = performanceService.kpis(p);
+  document.getElementById("kpiRow").innerHTML = kpis.map(k=>`
+    <div class="card kpi">
+      <div class="label">${k.label}</div>
+      <div class="value">${k.value}</div>
+      <div class="trend ${k.trend}">${k.trend==="up"?"↑ Improving":k.trend==="down"?"↓ Declining":"→ Stable"}</div>
+    </div>
+  `).join("");
+
+  renderTrendChart(p);
+
+  const rec = analyticsService.recommendations(p);
+  document.getElementById("trendExplain").textContent = rec.trendNote;
+  document.getElementById("dashRecommendation").innerHTML = `
+    <p class="explain">${rec.recommendation}</p>
+    <button class="btn small" id="approveDiffBtn">Approve</button>
+    <button class="btn ghost small" id="keepDiffBtn">Keep current</button>
+  `;
+  document.getElementById("approveDiffBtn").onclick = ()=>{
+    document.getElementById("dashRecommendation").innerHTML = `<p class="explain">Difficulty updated to ${p.difficulty}.</p>`;
+  };
+  document.getElementById("keepDiffBtn").onclick = ()=>{
+    document.getElementById("dashRecommendation").innerHTML = `<p class="explain">Current difficulty will remain unchanged.</p>`;
+  };
+
+  const gstats = performanceService.gameStats(p.id);
+  document.getElementById("gameCards").innerHTML = gstats.map(g=>`
+    <div class="card game-card">
+      <h4>${g.game}</h4>
+      <div class="row"><span>Accuracy</span><span>${g.accuracy}%</span></div>
+      <div class="row"><span>Avg score</span><span>${g.avgScore}/10</span></div>
+      <div class="row"><span>Sessions</span><span>${g.sessions}</span></div>
+      <div class="trend ${g.trend}">${g.trend==="up"?"↑ Improving":g.trend==="down"?"↓ Declining":"→ Stable"}</div>
+    </div>
+  `).join("");
+
+  renderCompareChart(gstats);
+
+  document.getElementById("diffTrack").innerHTML = p.difficultyPath.map((d,i)=>
+    `${i>0?'<span class="diff-arrow">→</span>':''}<span class="diff-step ${i===p.difficultyPath.length-1?'current':''}">${d}</span>`
+  ).join("");
+
+  document.getElementById("insightCards").innerHTML = `
+    <div class="card insight-card">
+      <div class="tag">Difficulty</div>
+      <p class="explain">${rec.difficulty}</p>
+    </div>
+    <div class="card insight-card">
+      <div class="tag">Engagement</div>
+      <p class="explain">${rec.engagement}</p>
+      <button class="why-btn" id="whyBtn">Why this recommendation?</button>
+      <ul class="why-list" id="whyList">${rec.why.map(w=>`<li>${w}</li>`).join("")}</ul>
+    </div>
+  `;
+  document.getElementById("whyBtn").onclick = ()=> document.getElementById("whyList").classList.toggle("open");
+
+  const alerts = alertService.alerts(p);
+  document.getElementById("dashAlerts").innerHTML = alerts.length ? alerts.slice(0,3).map(a=>renderAlertHTML(a)).join("")
+    : `<div class="empty"><h4>No recent alerts</h4></div>`;
+
+  document.querySelectorAll("[data-page='history']").forEach(b=> b.onclick = ()=> navigate("history"));
+}
+
+function renderTrendChart(p){
+  const ctx = document.getElementById("trendChart");
+  if (charts.trend) charts.trend.destroy();
+  charts.trend = new Chart(ctx, {
+    type:"line",
+    data:{ labels:p.trend.map((_,i)=>"Day "+(i+1)), datasets:[{ label:"Performance %", data:p.trend, borderColor:"#2F6F62", backgroundColor:"rgba(47,111,98,0.12)", tension:0.3, fill:true }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:true } }, scales:{ y:{ min:0, max:100 } } }
+  });
+}
+function renderCompareChart(gstats){
+  const ctx = document.getElementById("compareChart");
+  if (charts.compare) charts.compare.destroy();
+  charts.compare = new Chart(ctx, {
+    type:"bar",
+    data:{ labels:gstats.map(g=>g.game), datasets:[{ label:"Accuracy %", data:gstats.map(g=>g.accuracy), backgroundColor:"#2F6F62" }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ y:{ min:0, max:100 } } }
+  });
+}
+
+/* =========================================================
+   RENDER: HISTORY
+   ========================================================= */
+function renderHistory(){
+  const p = currentPatient();
+  const gameSel = document.getElementById("filterGame");
+  gameSel.innerHTML = '<option value="">All games</option>' + gameDefs.map(g=>`<option>${g}</option>`).join("");
+  const rows = historyService.sessions(p.id);
+  const tbody = document.querySelector("#histTable tbody");
+  function draw(){
+    const fg = gameSel.value, fd = document.getElementById("filterDifficulty").value, fs = document.getElementById("filterStatus").value;
+    const filtered = rows.filter(r => (!fg||r.game===fg) && (!fd||r.difficulty===fd) && (!fs||r.status===fs));
+    tbody.innerHTML = filtered.length ? filtered.map(r=>`
+      <tr>
+        <td data-label="Date">${r.date}</td><td data-label="Game">${r.game}</td><td data-label="Score">${r.score}</td>
+        <td data-label="Accuracy">${r.accuracy}</td><td data-label="Time">${r.time}</td>
+        <td data-label="Difficulty">${r.difficulty}</td><td data-label="Status">${r.status}</td>
+      </tr>`).join("") : `<tr><td colspan="7"><div class="empty">No game sessions match these filters.</div></td></tr>`;
+  }
+  [gameSel, document.getElementById("filterDifficulty"), document.getElementById("filterStatus")].forEach(el=> el.onchange = draw);
+  draw();
+}
+
+/* =========================================================
+   RENDER: REPORTS
+   ========================================================= */
+function renderReports(){
+  const p = currentPatient();
+  document.getElementById("reportKpis").innerHTML = performanceService.kpis(p).map(k=>`
+    <div class="card kpi"><div class="label">${k.label}</div><div class="value">${k.value}</div></div>
+  `).join("");
+
+  const ctx1 = document.getElementById("reportTrendChart");
+  if (charts.reportTrend) charts.reportTrend.destroy();
+  charts.reportTrend = new Chart(ctx1, { type:"line", data:{ labels:p.trend.map((_,i)=>"Day "+(i+1)), datasets:[{ label:"Performance %", data:p.trend, borderColor:"#2F6F62", tension:.3 }] }, options:{ responsive:true, maintainAspectRatio:false } });
+
+  const gstats = performanceService.gameStats(p.id);
+  const ctx2 = document.getElementById("reportCompareChart");
+  if (charts.reportCompare) charts.reportCompare.destroy();
+  charts.reportCompare = new Chart(ctx2, { type:"bar", data:{ labels:gstats.map(g=>g.game), datasets:[{ label:"Accuracy %", data:gstats.map(g=>g.accuracy), backgroundColor:"#B8862E" }] }, options:{ responsive:true, maintainAspectRatio:false } });
+
+  const rec = analyticsService.recommendations(p);
+  document.getElementById("reportRecs").innerHTML = `<p class="explain">${rec.recommendation}</p><p class="explain">${rec.difficulty}</p>`;
+}
+
+/* =========================================================
+   RENDER: ALERTS
+   ========================================================= */
+function renderAlertHTML(a){
+  return `<div class="alert ${a.read?'':'unread'}">
+    <span class="abadge">${a.type}</span>
+    <div class="alert-body">
+      <div style="font-size:13px;color:var(--muted);">${a.date}</div>
+      <div>${a.desc}</div>
+      <div class="alert-actions">
+        <button class="btn ghost small">View details</button>
+        <button class="btn ghost small">Dismiss</button>
+      </div>
+    </div>
+  </div>`;
+}
+function renderAlerts(){
+  const p = currentPatient();
+  const alerts = alertService.alerts(p);
+  document.getElementById("alertList").innerHTML = alerts.length
+    ? alerts.map(renderAlertHTML).join("")
+    : `<div class="empty"><h4>No recent alerts</h4></div>`;
+}
+
+/* =========================================================
+   RENDER: REMINDERS
+   ========================================================= */
+function renderReminders(){
+  const p = currentPatient();
+  const remGame = document.getElementById("remGame");
+  remGame.innerHTML = gameDefs.map(g=>`<option>${g}</option>`).join("");
+
+  const list = reminderService.list(p.id);
+  const container = document.getElementById("reminderList");
+  container.innerHTML = list.length ? list.map((r,i)=>`
+    <div class="reminder-card">
+      <div>
+        <div>${r.game}</div>
+        <div class="when">${r.repeat} · ${r.time}${r.date?" · "+r.date:""} · ${r.enabled?"Enabled":"Disabled"}</div>
+      </div>
+      <div class="alert-actions">
+        <button class="btn ghost small" data-toggle="${i}">${r.enabled?"Disable":"Enable"}</button>
+        <button class="btn ghost small" data-remove="${i}">Delete</button>
+      </div>
+    </div>
+  `).join("") : `<div class="empty"><h4>No activity reminders scheduled</h4></div>`;
+
+  container.querySelectorAll("[data-toggle]").forEach(b=> b.onclick = ()=>{ reminderService.toggle(p.id, +b.dataset.toggle); renderReminders(); });
+  container.querySelectorAll("[data-remove]").forEach(b=> b.onclick = ()=>{ reminderService.remove(p.id, +b.dataset.remove); renderReminders(); });
+
+  document.getElementById("addReminderBtn").onclick = ()=>{
+    const game = remGame.value, date = document.getElementById("remDate").value, time = document.getElementById("remTime").value, repeat = document.getElementById("remRepeat").value;
+    reminderService.add(p.id, { game, date, time, repeat, enabled:true });
+    renderReminders();
+  };
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+function navigate(page){
+  document.querySelectorAll(".page").forEach(el=> el.classList.remove("active"));
+  document.getElementById("page-"+page).classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(el=>{
+    if (el.dataset.page === page) el.setAttribute("aria-current","page"); else el.removeAttribute("aria-current");
+  });
+  if (page==="dashboard") renderDashboard();
+  if (page==="history") renderHistory();
+  if (page==="reports") renderReports();
+  if (page==="alerts") renderAlerts();
+  if (page==="reminders") renderReminders();
+  document.getElementById("sidebar").classList.remove("open");
+}
+
+/* =========================================================
+   OFFLINE HANDLING
+   ========================================================= */
+function updateOnlineStatus(){
+  state.online = navigator.onLine;
+  document.getElementById("statusDot").classList.toggle("off", !state.online);
+  document.getElementById("statusText").textContent = state.online ? "Online" : "Offline — viewing recently saved information";
+  const pill = document.getElementById("syncPill");
+  if (!state.online){ pill.style.display="none"; }
+}
+window.addEventListener("online", ()=>{ updateOnlineStatus(); simulateSync(); });
+window.addEventListener("offline", updateOnlineStatus);
+function simulateSync(){
+  const pending = storageService.get("mindcare_pending_sync") || 0;
+  if (pending>0){
+    const pill = document.getElementById("syncPill");
+    pill.style.display="inline-block";
+    pill.textContent = `${pending} activities waiting to sync.`;
+    setTimeout(()=>{
+      storageService.set("mindcare_pending_sync", 0);
+      pill.textContent = "All activities synchronized.";
+      setTimeout(()=> pill.style.display="none", 2500);
+    }, 1500);
+  }
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+function init(){
+  // patient selector
+  const psel = document.getElementById("patientSelect");
+  psel.innerHTML = patientService.getPatients().map(p=>`<option value="${p.id}">${p.id}</option>`).join("");
+  psel.value = state.patientId;
+  psel.onchange = ()=>{ state.patientId = psel.value; storageService.set("mindcare_selected_patient", state.patientId); navigate(currentActivePage()); };
+
+  // language selector
+  const lsel = document.getElementById("langSelect");
+  lsel.value = storageService.get("mindcare_caregiver_lang") || "en";
+  lsel.onchange = ()=>{ storageService.set("mindcare_caregiver_lang", lsel.value); applyTranslations(); };
+
+  const plsel = document.getElementById("patientLangSelect");
+  plsel.value = storageService.get("mindcare_patient_lang") || "as";
+  plsel.onchange = ()=> storageService.set("mindcare_patient_lang", plsel.value);
+
+  // sidebar nav
+  document.querySelectorAll(".nav-item[data-page]").forEach(btn=>{
+    btn.onclick = ()=> navigate(btn.dataset.page);
+  });
+
+  document.getElementById("drawerToggle").onclick = ()=>{
+    const sb = document.getElementById("sidebar");
+    const open = sb.classList.toggle("open");
+    document.getElementById("drawerToggle").setAttribute("aria-expanded", open);
+  };
+
+  document.getElementById("printBtn").onclick = ()=> window.print();
+
+  // voice
+  document.getElementById("testVoiceBtn").onclick = ()=>{
+    const status = document.getElementById("voiceStatus");
+    if (!("speechSynthesis" in window)){
+      status.textContent = "Voice assistance is not available on this device. Text instructions will still work.";
+      return;
+    }
+    const u = new SpeechSynthesisUtterance("Great job! Let's try again.");
+    speechSynthesis.speak(u);
+    status.textContent = "Playing sample voice instruction.";
+  };
+
+  // accessibility toggles
+  document.getElementById("largeTextToggle").onchange = e=> document.body.classList.toggle("large-text", e.target.checked);
+  document.getElementById("contrastToggle").onchange = e=> document.body.classList.toggle("contrast", e.target.checked);
+  document.getElementById("motionToggle").onchange = e=> document.body.classList.toggle("reduced-motion", e.target.checked);
+
+  // privacy
+  document.getElementById("clearLocalBtn").onclick = ()=>{
+    storageService.clear();
+    alert("Locally stored MindCare data has been removed from this device. Server-side records are not affected.");
+    location.reload();
+  };
+
+  // simulate 3 pending offline sessions for demo purposes
+  if (storageService.get("mindcare_pending_sync")===null) storageService.set("mindcare_pending_sync", 3);
+
+  applyTranslations();
+  updateOnlineStatus();
+  navigate("dashboard");
+}
+function currentActivePage(){
+  const active = document.querySelector(".page.active");
+  return active ? active.id.replace("page-","") : "dashboard";
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
