@@ -1,0 +1,2313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>MindCare</title>
+<style>
+/* ==========================================================================
+   MindCare — Patient Interface
+   Calm, warm, high-legibility design system for elderly users.
+   Palette: sage + warm sand + deep slate ink + soft gold accent.
+   Type: Atkinson Hyperlegible (built for low-vision readability) for
+   everything — body and display — set at a generous scale throughout.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root{
+  /* --- color tokens --- */
+  --sand-50:  #FBF8F2;
+  --sand-100: #F4EEE1;
+  --sage-100: #E4EDE4;
+  --sage-300: #A9C4AA;
+  --sage-500: #6E9271;
+  --sage-700: #4B6B4E;
+  --ink-900:  #2B3430;
+  --ink-700:  #47534D;
+  --ink-500:  #6B7871;
+  --gold-400: #D9A441;
+  --gold-600: #B5822B;
+  --white:    #FFFFFF;
+  --danger-soft: #C4675A;
+  --focus-ring: #2B6CB0;
+
+  /* --- surface roles --- */
+  --bg: var(--sand-50);
+  --surface: var(--white);
+  --surface-alt: var(--sage-100);
+  --text: var(--ink-900);
+  --text-muted: var(--ink-700);
+  --accent: var(--sage-500);
+  --accent-strong: var(--sage-700);
+  --highlight: var(--gold-400);
+
+  /* --- type scale (base 20px for elderly legibility) --- */
+  --fs-body: 1.25rem;      /* 20px */
+  --fs-lg:   1.5rem;       /* 24px */
+  --fs-xl:   1.9rem;       /* ~30px */
+  --fs-2xl:  2.6rem;       /* ~42px */
+  --lh-body: 1.6;
+
+  /* --- spacing / shape --- */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2.25rem;
+  --space-5: 3rem;
+  --radius-card: 22px;
+  --radius-btn: 16px;
+  --touch-min: 56px;
+
+  --transition-fast: 150ms ease;
+  --transition-normal: 260ms ease;
+}
+
+/* --- accessibility scaling hooks (toggled via body classes) --- */
+body.text-large{ --fs-body: 1.45rem; --fs-lg: 1.75rem; --fs-xl: 2.2rem; --fs-2xl: 3rem; }
+body.text-xl{ --fs-body: 1.7rem; --fs-lg: 2rem; --fs-xl: 2.5rem; --fs-2xl: 3.4rem; }
+
+body.contrast-high{
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-alt: #EDEDED;
+  --text: #000000;
+  --text-muted: #1A1A1A;
+  --accent: #1F5C33;
+  --accent-strong: #123A20;
+  --highlight: #8A5A00;
+}
+body.contrast-high .card{ border: 2px solid #000; }
+body.contrast-high .btn{ border: 2px solid #000; }
+
+body.motion-reduced *{
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+*{ box-sizing: border-box; }
+
+html{ -webkit-text-size-adjust: 100%; }
+
+body{
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Atkinson Hyperlegible', 'Segoe UI', system-ui, sans-serif;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text);
+  background: linear-gradient(180deg, var(--sand-100) 0%, var(--bg) 320px);
+}
+
+img, svg{ display: block; max-width: 100%; }
+
+a{ color: var(--accent-strong); }
+
+/* --- focus visibility (always shown, never removed) --- */
+:focus-visible{
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* --- layout shell --- */
+.app-shell{
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-3) calc(var(--space-5) + 70px);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-bar{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) 0 var(--space-3);
+}
+
+.brand{
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+.brand .brand-mark{
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, var(--sage-300), var(--sage-700));
+  flex: none;
+}
+
+.icon-btn{
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  border-radius: 50%;
+  border: none;
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgba(43,52,48,0.10);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 1.4rem;
+  color: var(--accent-strong);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.icon-btn:hover{ transform: translateY(-1px); box-shadow: 0 4px 12px rgba(43,52,48,0.16); }
+.icon-btn:active{ transform: translateY(0); }
+
+/* --- headings / text --- */
+h1, h2, h3{
+  font-family: inherit;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 var(--space-2);
+  line-height: 1.25;
+}
+h1{ font-size: var(--fs-2xl); }
+h2{ font-size: var(--fs-xl); }
+h3{ font-size: var(--fs-lg); }
+
+p{ margin: 0 0 var(--space-2); color: var(--text-muted); }
+.lead{ font-size: var(--fs-lg); color: var(--text-muted); }
+
+.center{ text-align: center; }
+
+/* --- cards --- */
+.card{
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  box-shadow: 0 6px 24px rgba(43,52,48,0.08);
+  margin-bottom: var(--space-3);
+}
+
+.activity-card{
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: left;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.activity-card .activity-icon{
+  flex: none;
+  width: 68px; height: 68px;
+  border-radius: 18px;
+  background: var(--surface-alt);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.1rem;
+}
+.activity-card .activity-copy{ flex: 1; min-width: 0; }
+.activity-card h3{ margin-bottom: 0.25rem; }
+.activity-card p{ margin: 0; font-size: 1.05rem; }
+.activity-card .chevron{ flex: none; font-size: 1.6rem; color: var(--accent); }
+
+/* --- buttons --- */
+.btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: var(--touch-min);
+  padding: 0.9rem 1.75rem;
+  border-radius: var(--radius-btn);
+  border: none;
+  font-family: inherit;
+  font-size: var(--fs-body);
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+  text-decoration: none;
+}
+.btn:active{ transform: scale(0.98); }
+
+.btn-primary{
+  background: var(--accent-strong);
+  color: var(--white);
+  box-shadow: 0 4px 14px rgba(75,107,78,0.35);
+}
+.btn-primary:hover{ background: var(--accent); }
+
+.btn-secondary{
+  background: var(--surface);
+  color: var(--accent-strong);
+  border: 2px solid var(--sage-300);
+}
+.btn-secondary:hover{ background: var(--surface-alt); }
+
+.btn-quiet{
+  background: transparent;
+  color: var(--text-muted);
+  border: 2px solid transparent;
+}
+.btn-quiet:hover{ background: var(--surface-alt); }
+
+.btn-danger{
+  background: var(--danger-soft);
+  color: var(--white);
+}
+
+.btn-block{ width: 100%; }
+.btn-row{ display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.btn-row > .btn{ flex: 1; min-width: 180px; }
+
+.btn-voice{
+  background: var(--surface-alt);
+  color: var(--accent-strong);
+}
+
+/* --- progress bar --- */
+.progress-wrap{ margin: var(--space-2) 0 var(--space-3); }
+.progress-label{
+  display: flex; justify-content: space-between;
+  font-size: 1.05rem; color: var(--text-muted); margin-bottom: 0.4rem;
+}
+.progress-track{
+  height: 16px;
+  border-radius: 999px;
+  background: var(--surface-alt);
+  overflow: hidden;
+}
+.progress-fill{
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--sage-500), var(--accent-strong));
+  transition: width var(--transition-normal);
+}
+
+.take-your-time{
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: var(--space-1) 0 var(--space-3);
+}
+
+/* --- bottom nav --- */
+.bottom-nav{
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--sage-100);
+  display: flex;
+  justify-content: space-around;
+  padding: 0.4rem 0.5rem calc(0.4rem + env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 16px rgba(43,52,48,0.08);
+}
+.bottom-nav a{
+  flex: 1;
+  max-width: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.5rem 0.25rem;
+  min-height: var(--touch-min);
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 14px;
+}
+.bottom-nav a.active{ color: var(--accent-strong); background: var(--surface-alt); }
+.bottom-nav .nav-icon{ font-size: 1.5rem; }
+
+/* --- game grid: memory match --- */
+.memory-grid{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+  margin: var(--space-2) 0 var(--space-3);
+}
+@media (max-width: 480px){
+  .memory-grid{ grid-template-columns: repeat(2, 1fr); }
+}
+.mem-card{
+  aspect-ratio: 1;
+  border-radius: 16px;
+  border: none;
+  background: var(--surface-alt);
+  font-size: 2rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform var(--transition-fast), background var(--transition-fast);
+  box-shadow: 0 3px 10px rgba(43,52,48,0.08);
+}
+.mem-card[data-state="hidden"]{ background: var(--sage-500); color: transparent; }
+.mem-card[data-state="hidden"]::after{ content: "?"; color: var(--white); font-weight: 700; font-size: 1.8rem; }
+.mem-card[data-state="revealed"], .mem-card[data-state="matched"]{ background: var(--surface); }
+.mem-card[data-state="matched"]{ background: var(--sage-100); box-shadow: none; opacity: 0.85; }
+.mem-card:disabled{ cursor: default; }
+.mem-card:hover:not(:disabled){ transform: translateY(-2px); }
+
+/* --- sequence display --- */
+.sequence-row{
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: var(--space-3) 0;
+}
+.seq-item{
+  width: 76px; height: 76px;
+  border-radius: 18px;
+  background: var(--surface-alt);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.2rem;
+  box-shadow: 0 3px 10px rgba(43,52,48,0.08);
+}
+.seq-item.dim{ opacity: 0.25; }
+
+.option-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+.option-btn{
+  min-height: 90px;
+  border-radius: 18px;
+  border: 2px solid var(--sage-300);
+  background: var(--surface);
+  font-size: 2.4rem;
+  cursor: pointer;
+  transition: transform var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+}
+.option-btn:hover{ background: var(--surface-alt); }
+.option-btn.correct{ background: var(--sage-300); border-color: var(--sage-700); }
+.option-btn.incorrect{ background: #F3DBD7; border-color: var(--danger-soft); }
+
+/* --- feedback banner --- */
+.feedback-banner{
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-btn);
+  background: var(--surface-alt);
+  color: var(--accent-strong);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  margin-bottom: var(--space-3);
+  min-height: var(--touch-min);
+}
+.feedback-banner.incorrect{ background: #F3DBD7; color: #8A3B30; }
+
+/* --- results screen --- */
+.result-stats{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+.stat-tile{
+  background: var(--surface-alt);
+  border-radius: 16px;
+  padding: var(--space-2);
+  text-align: center;
+}
+.stat-tile .stat-value{ font-size: var(--fs-xl); font-weight: 700; color: var(--accent-strong); }
+.stat-tile .stat-label{ font-size: 1rem; color: var(--text-muted); }
+
+/* --- modal (pause / exit confirm) --- */
+.modal-overlay{
+  position: fixed; inset: 0;
+  background: rgba(43,52,48,0.45);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-3);
+  z-index: 50;
+}
+.modal-box{
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+}
+
+/* --- settings groups --- */
+.settings-group{ margin-bottom: var(--space-3); }
+.settings-group h3{ margin-bottom: var(--space-2); }
+.pill-row{ display: flex; gap: var(--space-1); flex-wrap: wrap; }
+.pill-btn{
+  min-height: 48px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  border: 2px solid var(--sage-300);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+}
+.pill-btn[aria-pressed="true"]{
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: var(--white);
+}
+
+/* --- badge / patient id --- */
+.patient-tag{
+  display: inline-block;
+  font-size: 1rem;
+  color: var(--text-muted);
+  background: var(--surface-alt);
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  margin-top: 0.25rem;
+}
+
+.visually-hidden{
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.sync-note{
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-top: var(--space-2);
+}
+
+</style>
+</head>
+<body data-page="home">
+
+<div class="app-shell">
+
+  <section id="view-home" class="view">
+
+
+  <div class="top-bar">
+    <span class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span data-i18n="app_name">MindCare</span>
+    </span>
+    <button class="icon-btn" id="voiceHomeBtn" data-i18n-aria="hear_instructions" aria-label="Hear instructions" title="Hear instructions">🔊</button>
+  </div>
+
+  <div class="card center">
+    <h1 data-i18n="welcome">Welcome to MindCare</h1>
+    <p class="lead" data-i18n="ready">Ready for an activity?</p>
+    <span class="patient-tag" id="patientTag">Patient MC-1001</span>
+  </div>
+
+  <button class="card activity-card" data-game="memory-match">
+    <span class="activity-icon" aria-hidden="true">🧩</span>
+    <span class="activity-copy">
+      <h3 data-i18n="memory_match">Memory Match</h3>
+      <p data-i18n="memory_match_desc">Remember and match the objects.</p>
+    </span>
+    <span class="chevron" aria-hidden="true">›</span>
+  </button>
+
+  <button class="card activity-card" data-game="sequence-recall">
+    <span class="activity-icon" aria-hidden="true">🔢</span>
+    <span class="activity-copy">
+      <h3 data-i18n="sequence_recall">Sequence Recall</h3>
+      <p data-i18n="sequence_recall_desc">Remember the order and repeat it.</p>
+    </span>
+    <span class="chevron" aria-hidden="true">›</span>
+  </button>
+
+  <button class="card activity-card" data-game="pattern-recognition">
+    <span class="activity-icon" aria-hidden="true">🔷</span>
+    <span class="activity-copy">
+      <h3 data-i18n="pattern_recognition">Pattern Recognition</h3>
+      <p data-i18n="pattern_recognition_desc">Look at the pattern and choose what comes next.</p>
+    </span>
+    <span class="chevron" aria-hidden="true">›</span>
+  </button>
+
+  <p class="center" id="progressLine" style="margin-top: var(--space-2);" data-i18n="progress_sessions">Progress: 0 sessions</p>
+
+
+  </section>
+
+  <section id="view-activities" class="view" style="display:none;">
+
+
+  <div class="top-bar">
+    <span class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span data-i18n="app_name">MindCare</span>
+    </span>
+  </div>
+
+  <h1 data-i18n="activities">Activities</h1>
+  <p class="lead" data-i18n="ready">Ready for an activity?</p>
+
+  <button class="card activity-card" data-game="memory-match">
+    <span class="activity-icon" aria-hidden="true">🧩</span>
+    <span class="activity-copy">
+      <h3 data-i18n="memory_match">Memory Match</h3>
+      <p data-i18n="memory_match_desc">Remember and match the objects.</p>
+    </span>
+    <span class="btn btn-primary" data-i18n="start">Start</span>
+  </button>
+
+  <button class="card activity-card" data-game="sequence-recall">
+    <span class="activity-icon" aria-hidden="true">🔢</span>
+    <span class="activity-copy">
+      <h3 data-i18n="sequence_recall">Sequence Recall</h3>
+      <p data-i18n="sequence_recall_desc">Remember the order and repeat it.</p>
+    </span>
+    <span class="btn btn-primary" data-i18n="start">Start</span>
+  </button>
+
+  <button class="card activity-card" data-game="pattern-recognition">
+    <span class="activity-icon" aria-hidden="true">🔷</span>
+    <span class="activity-copy">
+      <h3 data-i18n="pattern_recognition">Pattern Recognition</h3>
+      <p data-i18n="pattern_recognition_desc">Look at the pattern and choose what comes next.</p>
+    </span>
+    <span class="btn btn-primary" data-i18n="start">Start</span>
+  </button>
+
+
+  </section>
+
+  <section id="view-help" class="view" style="display:none;">
+
+
+  <div class="top-bar">
+    <span class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span data-i18n="app_name">MindCare</span>
+    </span>
+  </div>
+
+  <div class="card center">
+    <h1 data-i18n="need_help">Need Help?</h1>
+    <p class="lead" id="helpText" data-i18n="help_text">Choose an activity and follow the instructions.</p>
+    <button class="btn btn-voice btn-block" id="hearHelpBtn">
+      <span aria-hidden="true">🔊</span>
+      <span data-i18n="hear_help">Hear Help</span>
+    </button>
+  </div>
+
+  <button class="btn btn-primary btn-block" data-view="home" data-i18n="home">Home</button>
+
+
+  </section>
+
+  <section id="view-settings" class="view" style="display:none;">
+
+
+  <div class="top-bar">
+    <span class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span data-i18n="app_name">MindCare</span>
+    </span>
+  </div>
+
+  <h1 data-i18n="settings">Settings</h1>
+
+  <div class="card">
+    <div class="settings-group">
+      <h3 data-i18n="language">Language</h3>
+      <div class="pill-row" id="langRow">
+        <button class="pill-btn" data-value="en" aria-pressed="false">English</button>
+        <button class="pill-btn" data-value="hi" aria-pressed="false">हिन्दी</button>
+        <button class="pill-btn" data-value="as" aria-pressed="false">অসমীয়া</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <h3 data-i18n="text_size">Text Size</h3>
+      <div class="pill-row" id="textSizeRow">
+        <button class="pill-btn" data-value="normal" data-i18n="normal" aria-pressed="false">Normal</button>
+        <button class="pill-btn" data-value="large" data-i18n="large" aria-pressed="false">Large</button>
+        <button class="pill-btn" data-value="extra_large" data-i18n="extra_large" aria-pressed="false">Extra Large</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <h3 data-i18n="contrast">Contrast</h3>
+      <div class="pill-row" id="contrastRow">
+        <button class="pill-btn" data-value="normal" data-i18n="normal" aria-pressed="false">Normal</button>
+        <button class="pill-btn" data-value="high" data-i18n="high_contrast" aria-pressed="false">High Contrast</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <h3 data-i18n="motion">Motion</h3>
+      <div class="pill-row" id="motionRow">
+        <button class="pill-btn" data-value="normal" data-i18n="normal" aria-pressed="false">Normal</button>
+        <button class="pill-btn" data-value="reduced" data-i18n="reduced_motion" aria-pressed="false">Reduced Motion</button>
+      </div>
+    </div>
+  </div>
+
+
+  </section>
+
+  <section id="view-mm" class="view" style="display:none;">
+
+
+  <div class="top-bar">
+    <button class="icon-btn" id="mmExitBtn" aria-label="Exit activity" title="Exit">✕</button>
+    <span class="brand"><span data-i18n="memory_match">Memory Match</span></span>
+    <button class="icon-btn" id="mmPauseBtn" aria-label="Pause" title="Pause" style="display:none;">⏸</button>
+  </div>
+
+  <!-- INSTRUCTIONS -->
+  <section id="mmInstructionsScreen">
+    <div class="card center">
+      <h2 data-i18n="memory_match">Memory Match</h2>
+      <p class="lead" id="mmInstructionsText" data-i18n="memory_match_instructions">Remember these objects.</p>
+      <div class="btn-row">
+        <button class="btn btn-voice" id="mmHearInstructionsBtn">
+          <span aria-hidden="true">🔊</span> <span data-i18n="hear_instructions">Hear Instructions</span>
+        </button>
+        <button class="btn btn-primary" id="mmStartGameBtn" data-i18n="start_game">Start Game</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAMEPLAY -->
+  <section id="mmGameScreen" style="display:none;">
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="mmProgressText">Question 1 of 4</span>
+        <span id="mmProgressPercentText">0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="mmProgressFill" style="width:0%"></div></div>
+    </div>
+    <p class="take-your-time" data-i18n="take_your_time">Take your time.</p>
+
+    <div id="mmFeedbackBanner" class="feedback-banner" style="display:none;" role="status" aria-live="polite"></div>
+
+    <div class="memory-grid" id="mmMemoryGrid" role="group" aria-label="Memory match board"></div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="mmResultsScreen" style="display:none;">
+    <div class="card center">
+      <h2 data-i18n="session_complete_title">Session Complete</h2>
+      <p class="lead" id="mmResultFeedback">Great job!</p>
+      <div class="result-stats">
+        <div class="stat-tile"><div class="stat-value" id="mmStatScore">0</div><div class="stat-label" data-i18n="score">Score</div></div>
+        <div class="stat-tile"><div class="stat-value" id="mmStatAccuracy">0%</div><div class="stat-label" data-i18n="accuracy">Accuracy</div></div>
+        <div class="stat-tile"><div class="stat-value" id="mmStatCorrect">0/0</div><div class="stat-label" data-i18n="correct_label">Correct</div></div>
+        <div class="stat-tile"><div class="stat-value" id="mmStatTime">0:00</div><div class="stat-label" data-i18n="time_label">Time</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="mmPlayAgainBtn" data-i18n="play_again">Play Again</button>
+        <button class="btn btn-primary" id="mmChooseAnotherBtn" data-i18n="choose_another">Choose Another Activity</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SESSION COMPLETE -->
+  <section id="mmCompleteScreen" style="display:none;">
+    <div class="card center">
+      <p class="lead" data-i18n="session_thanks">Your session is complete.</p>
+      <button class="btn btn-primary btn-block" data-done-btn data-i18n="done">Done</button>
+    </div>
+  </section>
+
+
+<!-- PAUSE MODAL -->
+<div class="modal-overlay" id="mmPauseModal" style="display:none;">
+  <div class="modal-box">
+    <h2 data-i18n="activity_paused">Activity Paused</h2>
+    <p data-i18n="take_your_time">Take your time.</p>
+    <button class="btn btn-primary btn-block" id="mmResumeBtn" data-i18n="continue">Continue</button>
+  </div>
+</div>
+
+<!-- EXIT CONFIRM MODAL -->
+<div class="modal-overlay" id="mmExitModal" style="display:none;">
+  <div class="modal-box">
+    <p class="lead" data-i18n="leave_activity_q">Do you want to leave this activity?</p>
+    <div class="btn-row">
+      <button class="btn btn-secondary" id="mmExitContinueBtn" data-i18n="continue">Continue</button>
+      <button class="btn btn-danger" id="mmExitConfirmBtn" data-i18n="exit">Exit</button>
+    </div>
+  </div>
+</div>
+  </section>
+
+  <section id="view-sr" class="view" style="display:none;">
+
+
+  <div class="top-bar">
+    <button class="icon-btn" id="srExitBtn" aria-label="Exit activity" title="Exit">✕</button>
+    <span class="brand"><span data-i18n="sequence_recall">Sequence Recall</span></span>
+    <button class="icon-btn" id="srPauseBtn" aria-label="Pause" title="Pause" style="display:none;">⏸</button>
+  </div>
+
+  <!-- INSTRUCTIONS -->
+  <section id="srInstructionsScreen">
+    <div class="card center">
+      <h2 data-i18n="sequence_recall">Sequence Recall</h2>
+      <p class="lead" data-i18n="sequence_instructions">Watch the shapes carefully.</p>
+      <div class="btn-row">
+        <button class="btn btn-voice" id="srHearInstructionsBtn">
+          <span aria-hidden="true">🔊</span> <span data-i18n="hear_instructions">Hear Instructions</span>
+        </button>
+        <button class="btn btn-primary" id="srStartGameBtn" data-i18n="start_game">Start Game</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAMEPLAY -->
+  <section id="srGameScreen" style="display:none;">
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="srProgressText">Question 1 of 5</span>
+        <span id="srProgressPercentText">0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="srProgressFill" style="width:0%"></div></div>
+    </div>
+    <p class="take-your-time" data-i18n="take_your_time">Take your time.</p>
+
+    <div id="srFeedbackBanner" class="feedback-banner" style="display:none;" role="status" aria-live="polite"></div>
+
+    <div class="card center">
+      <p class="lead" id="srPhaseLabel">Watch closely</p>
+      <div class="sequence-row" id="srSequenceRow"></div>
+      <div class="option-grid" id="srOptionGrid" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="srResultsScreen" style="display:none;">
+    <div class="card center">
+      <h2 data-i18n="session_complete_title">Session Complete</h2>
+      <p class="lead" id="srResultFeedback">Great job!</p>
+      <div class="result-stats">
+        <div class="stat-tile"><div class="stat-value" id="srStatScore">0</div><div class="stat-label" data-i18n="score">Score</div></div>
+        <div class="stat-tile"><div class="stat-value" id="srStatAccuracy">0%</div><div class="stat-label" data-i18n="accuracy">Accuracy</div></div>
+        <div class="stat-tile"><div class="stat-value" id="srStatCorrect">0/0</div><div class="stat-label" data-i18n="correct_label">Correct</div></div>
+        <div class="stat-tile"><div class="stat-value" id="srStatTime">0:00</div><div class="stat-label" data-i18n="time_label">Time</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="srPlayAgainBtn" data-i18n="play_again">Play Again</button>
+        <button class="btn btn-primary" id="srChooseAnotherBtn" data-i18n="choose_another">Choose Another Activity</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SESSION COMPLETE -->
+  <section id="srCompleteScreen" style="display:none;">
+    <div class="card center">
+      <p class="lead" data-i18n="session_thanks">Your session is complete.</p>
+      <button class="btn btn-primary btn-block" data-done-btn data-i18n="done">Done</button>
+    </div>
+  </section>
+
+
+<!-- PAUSE MODAL -->
+<div class="modal-overlay" id="srPauseModal" style="display:none;">
+  <div class="modal-box">
+    <h2 data-i18n="activity_paused">Activity Paused</h2>
+    <p data-i18n="take_your_time">Take your time.</p>
+    <button class="btn btn-primary btn-block" id="srResumeBtn" data-i18n="continue">Continue</button>
+  </div>
+</div>
+
+<!-- EXIT CONFIRM MODAL -->
+<div class="modal-overlay" id="srExitModal" style="display:none;">
+  <div class="modal-box">
+    <p class="lead" data-i18n="leave_activity_q">Do you want to leave this activity?</p>
+    <div class="btn-row">
+      <button class="btn btn-secondary" id="srExitContinueBtn" data-i18n="continue">Continue</button>
+      <button class="btn btn-danger" id="srExitConfirmBtn" data-i18n="exit">Exit</button>
+    </div>
+  </div>
+</div>
+  </section>
+
+  <section id="view-pr" class="view" style="display:none;">
+
+
+  <div class="top-bar">
+    <button class="icon-btn" id="prExitBtn" aria-label="Exit activity" title="Exit">✕</button>
+    <span class="brand"><span data-i18n="pattern_recognition">Pattern Recognition</span></span>
+    <button class="icon-btn" id="prPauseBtn" aria-label="Pause" title="Pause" style="display:none;">⏸</button>
+  </div>
+
+  <!-- INSTRUCTIONS -->
+  <section id="prInstructionsScreen">
+    <div class="card center">
+      <h2 data-i18n="pattern_recognition">Pattern Recognition</h2>
+      <p class="lead" data-i18n="pattern_instructions">Look at the pattern.</p>
+      <div class="btn-row">
+        <button class="btn btn-voice" id="prHearInstructionsBtn">
+          <span aria-hidden="true">🔊</span> <span data-i18n="hear_instructions">Hear Instructions</span>
+        </button>
+        <button class="btn btn-primary" id="prStartGameBtn" data-i18n="start_game">Start Game</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAMEPLAY -->
+  <section id="prGameScreen" style="display:none;">
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="prProgressText">Question 1 of 6</span>
+        <span id="prProgressPercentText">0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="prProgressFill" style="width:0%"></div></div>
+    </div>
+    <p class="take-your-time" data-i18n="take_your_time">Take your time.</p>
+
+    <div id="prFeedbackBanner" class="feedback-banner" style="display:none;" role="status" aria-live="polite"></div>
+
+    <div class="card center">
+      <div class="sequence-row" id="prPatternRow"></div>
+      <div class="option-grid" id="prOptionGrid"></div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="prResultsScreen" style="display:none;">
+    <div class="card center">
+      <h2 data-i18n="session_complete_title">Session Complete</h2>
+      <p class="lead" id="prResultFeedback">Great job!</p>
+      <div class="result-stats">
+        <div class="stat-tile"><div class="stat-value" id="prStatScore">0</div><div class="stat-label" data-i18n="score">Score</div></div>
+        <div class="stat-tile"><div class="stat-value" id="prStatAccuracy">0%</div><div class="stat-label" data-i18n="accuracy">Accuracy</div></div>
+        <div class="stat-tile"><div class="stat-value" id="prStatCorrect">0/0</div><div class="stat-label" data-i18n="correct_label">Correct</div></div>
+        <div class="stat-tile"><div class="stat-value" id="prStatTime">0:00</div><div class="stat-label" data-i18n="time_label">Time</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="prPlayAgainBtn" data-i18n="play_again">Play Again</button>
+        <button class="btn btn-primary" id="prChooseAnotherBtn" data-i18n="choose_another">Choose Another Activity</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SESSION COMPLETE -->
+  <section id="prCompleteScreen" style="display:none;">
+    <div class="card center">
+      <p class="lead" data-i18n="session_thanks">Your session is complete.</p>
+      <button class="btn btn-primary btn-block" data-done-btn data-i18n="done">Done</button>
+    </div>
+  </section>
+
+
+<!-- PAUSE MODAL -->
+<div class="modal-overlay" id="prPauseModal" style="display:none;">
+  <div class="modal-box">
+    <h2 data-i18n="activity_paused">Activity Paused</h2>
+    <p data-i18n="take_your_time">Take your time.</p>
+    <button class="btn btn-primary btn-block" id="prResumeBtn" data-i18n="continue">Continue</button>
+  </div>
+</div>
+
+<!-- EXIT CONFIRM MODAL -->
+<div class="modal-overlay" id="prExitModal" style="display:none;">
+  <div class="modal-box">
+    <p class="lead" data-i18n="leave_activity_q">Do you want to leave this activity?</p>
+    <div class="btn-row">
+      <button class="btn btn-secondary" id="prExitContinueBtn" data-i18n="continue">Continue</button>
+      <button class="btn btn-danger" id="prExitConfirmBtn" data-i18n="exit">Exit</button>
+    </div>
+  </div>
+</div>
+  </section>
+
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Main navigation">
+  <a href="javascript:void(0)" data-nav="home" class="active"><span class="nav-icon" aria-hidden="true">🏠</span><span data-i18n="home">Home</span></a>
+  <a href="javascript:void(0)" data-nav="activities"><span class="nav-icon" aria-hidden="true">🎯</span><span data-i18n="activities">Activities</span></a>
+  <a href="javascript:void(0)" data-nav="help"><span class="nav-icon" aria-hidden="true">❓</span><span data-i18n="help">Help</span></a>
+  <a href="javascript:void(0)" data-nav="settings"><span class="nav-icon" aria-hidden="true">⚙️</span><span data-i18n="settings">Settings</span></a>
+</nav>
+
+<script>
+const MC_LOCALES = {
+  "en": {
+    "app_name": "MindCare",
+    "welcome": "Welcome to MindCare",
+    "ready": "Ready for an activity?",
+    "memory_match": "Memory Match",
+    "memory_match_desc": "Remember and match the objects.",
+    "sequence_recall": "Sequence Recall",
+    "sequence_recall_desc": "Remember the order and repeat it.",
+    "pattern_recognition": "Pattern Recognition",
+    "pattern_recognition_desc": "Look at the pattern and choose what comes next.",
+    "start": "Start",
+    "start_game": "Start Game",
+    "hear_instructions": "Hear Instructions",
+    "hear_help": "Hear Help",
+    "take_your_time": "Take your time.",
+    "question_of": "Question {current} of {total}",
+    "great_job": "Great! That's a match.",
+    "try_again": "That's okay. Try again.",
+    "matched_all": "Well done! You matched all the pairs.",
+    "correct": "Excellent!",
+    "incorrect": "That's okay. Let's try the next one.",
+    "session_complete_title": "Session Complete",
+    "great_job_title": "Great job!",
+    "score": "Score",
+    "accuracy": "Accuracy",
+    "correct_label": "Correct",
+    "time_label": "Time",
+    "difficulty_label": "Difficulty",
+    "play_again": "Play Again",
+    "choose_another": "Choose Another Activity",
+    "session_thanks": "Your session is complete.\nThank you for playing.",
+    "done": "Done",
+    "home": "Home",
+    "activities": "Activities",
+    "help": "Help",
+    "settings": "Settings",
+    "need_help": "Need Help?",
+    "help_text": "Choose an activity and follow the instructions.",
+    "progress_sessions": "Progress: {count} sessions",
+    "leave_activity_q": "Do you want to leave this activity?",
+    "continue": "Continue",
+    "exit": "Exit",
+    "pause": "Pause",
+    "activity_paused": "Activity Paused",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "text_size": "Text Size",
+    "normal": "Normal",
+    "large": "Large",
+    "extra_large": "Extra Large",
+    "contrast": "Contrast",
+    "high_contrast": "High Contrast",
+    "motion": "Motion",
+    "reduced_motion": "Reduced Motion",
+    "language": "Language",
+    "memory_match_instructions": "Remember these objects.\nYou will see some objects.\nTry to remember where they are.",
+    "sequence_instructions": "Watch the shapes carefully.\nThen repeat them in the same order.",
+    "pattern_instructions": "Look at the pattern.\nChoose what comes next.",
+    "high_performance": "Great job! You completed {correct} out of {total} correctly.",
+    "average_performance": "Well done! You completed today's activity.",
+    "low_performance": "Good effort! Every session is a chance to practice.",
+    "min": "min",
+    "sec": "sec"
+  },
+  "hi": {
+    "app_name": "माइंडकेयर",
+    "welcome": "माइंडकेयर में आपका स्वागत है",
+    "ready": "क्या आप एक गतिविधि के लिए तैयार हैं?",
+    "memory_match": "मेमोरी मैच",
+    "memory_match_desc": "वस्तुओं को याद रखें और मिलाएं।",
+    "sequence_recall": "क्रम याद रखें",
+    "sequence_recall_desc": "क्रम याद रखें और उसे दोहराएं।",
+    "pattern_recognition": "पैटर्न पहचान",
+    "pattern_recognition_desc": "पैटर्न देखें और अगला चुनें।",
+    "start": "शुरू करें",
+    "start_game": "खेल शुरू करें",
+    "hear_instructions": "निर्देश सुनें",
+    "hear_help": "मदद सुनें",
+    "take_your_time": "अपना समय लें।",
+    "question_of": "प्रश्न {current} में से {total}",
+    "great_job": "बहुत बढ़िया! यह मेल खाता है।",
+    "try_again": "कोई बात नहीं। फिर से कोशिश करें।",
+    "matched_all": "शाबाश! आपने सभी जोड़े मिला दिए।",
+    "correct": "उत्कृष्ट!",
+    "incorrect": "कोई बात नहीं। अगला प्रयास करें।",
+    "session_complete_title": "सत्र पूर्ण हुआ",
+    "great_job_title": "बहुत बढ़िया काम!",
+    "score": "स्कोर",
+    "accuracy": "सटीकता",
+    "correct_label": "सही",
+    "time_label": "समय",
+    "difficulty_label": "कठिनाई",
+    "play_again": "फिर से खेलें",
+    "choose_another": "दूसरी गतिविधि चुनें",
+    "session_thanks": "आपका सत्र पूर्ण हुआ।\nखेलने के लिए धन्यवाद।",
+    "done": "पूर्ण",
+    "home": "होम",
+    "activities": "गतिविधियाँ",
+    "help": "सहायता",
+    "settings": "सेटिंग्स",
+    "need_help": "मदद चाहिए?",
+    "help_text": "एक गतिविधि चुनें और निर्देशों का पालन करें।",
+    "progress_sessions": "प्रगति: {count} सत्र",
+    "leave_activity_q": "क्या आप इस गतिविधि को छोड़ना चाहते हैं?",
+    "continue": "जारी रखें",
+    "exit": "बाहर जाएं",
+    "pause": "रोकें",
+    "activity_paused": "गतिविधि रोकी गई",
+    "easy": "आसान",
+    "medium": "मध्यम",
+    "hard": "कठिन",
+    "text_size": "टेक्स्ट आकार",
+    "normal": "सामान्य",
+    "large": "बड़ा",
+    "extra_large": "अतिरिक्त बड़ा",
+    "contrast": "कंट्रास्ट",
+    "high_contrast": "उच्च कंट्रास्ट",
+    "motion": "गति",
+    "reduced_motion": "कम गति",
+    "language": "भाषा",
+    "memory_match_instructions": "इन वस्तुओं को याद रखें।\nआप कुछ वस्तुएं देखेंगे।\nयाद रखने की कोशिश करें कि वे कहाँ हैं।",
+    "sequence_instructions": "आकृतियों को ध्यान से देखें।\nफिर उन्हें उसी क्रम में दोहराएं।",
+    "pattern_instructions": "पैटर्न को देखें।\nअगला क्या आता है चुनें।",
+    "high_performance": "बहुत बढ़िया! आपने {total} में से {correct} सही किए।",
+    "average_performance": "शाबाश! आपने आज की गतिविधि पूरी की।",
+    "low_performance": "अच्छा प्रयास! हर सत्र अभ्यास का एक मौका है।",
+    "min": "मिनट",
+    "sec": "सेकंड"
+  },
+  "as": {
+    "app_name": "মাইণ্ডকেয়াৰ",
+    "welcome": "মাইণ্ডকেয়াৰলৈ স্বাগতম",
+    "ready": "কাৰ্যকলাপৰ বাবে সাজু নেকি?",
+    "memory_match": "মেমৰি মেচ",
+    "memory_match_desc": "বস্তুবোৰ মনত ৰাখক আৰু মিলাওক।",
+    "sequence_recall": "ক্ৰম মনত ৰখা",
+    "sequence_recall_desc": "ক্ৰমটো মনত ৰাখি পুনৰাবৃত্তি কৰক।",
+    "pattern_recognition": "আৰ্হি চিনাক্তকৰণ",
+    "pattern_recognition_desc": "আৰ্হিটো চাই পিছৰটো বাছক।",
+    "start": "আৰম্ভ কৰক",
+    "start_game": "খেল আৰম্ভ কৰক",
+    "hear_instructions": "নিৰ্দেশনা শুনক",
+    "hear_help": "সহায় শুনক",
+    "take_your_time": "আপোনাৰ সময় লওক।",
+    "question_of": "প্ৰশ্ন {total} ৰ {current}",
+    "great_job": "বাঢ়িয়া! এইটো মিল খাইছে।",
+    "try_again": "ঠিক আছে। পুনৰ চেষ্টা কৰক।",
+    "matched_all": "বাঢ়িয়া কৰিলে! আপুনি সকলো যোৰা মিলাইছে।",
+    "correct": "উৎকৃষ্ট!",
+    "incorrect": "ঠিক আছে। পৰৱৰ্তীটো চেষ্টা কৰক।",
+    "session_complete_title": "সেশ্বন সম্পূৰ্ণ হ'ল",
+    "great_job_title": "বাঢ়িয়া কাম!",
+    "score": "স্ক'ৰ",
+    "accuracy": "সঠিকতা",
+    "correct_label": "শুদ্ধ",
+    "time_label": "সময়",
+    "difficulty_label": "কঠিনতা",
+    "play_again": "পুনৰ খেলক",
+    "choose_another": "আন কাৰ্যকলাপ বাছক",
+    "session_thanks": "আপোনাৰ সেশ্বন সম্পূৰ্ণ হ'ল।\nখেলাৰ বাবে ধন্যবাদ।",
+    "done": "সম্পূৰ্ণ",
+    "home": "গৃহ",
+    "activities": "কাৰ্যকলাপ",
+    "help": "সহায়",
+    "settings": "ছেটিং",
+    "need_help": "সহায় লাগেনে?",
+    "help_text": "এটা কাৰ্যকলাপ বাছক আৰু নিৰ্দেশনা অনুসৰণ কৰক।",
+    "progress_sessions": "প্ৰগতি: {count} সেশ্বন",
+    "leave_activity_q": "আপুনি এই কাৰ্যকলাপ এৰি যাব বিচাৰেনে?",
+    "continue": "অব্যাহত ৰাখক",
+    "exit": "বাহিৰ ওলাওক",
+    "pause": "বিৰতি",
+    "activity_paused": "কাৰ্যকলাপ বিৰতি দিয়া হৈছে",
+    "easy": "সহজ",
+    "medium": "মধ্যম",
+    "hard": "কঠিন",
+    "text_size": "লিখনিৰ আকাৰ",
+    "normal": "স্বাভাৱিক",
+    "large": "ডাঙৰ",
+    "extra_large": "অতিৰিক্ত ডাঙৰ",
+    "contrast": "কণ্ট্ৰাষ্ট",
+    "high_contrast": "উচ্চ কণ্ট্ৰাষ্ট",
+    "motion": "গতি",
+    "reduced_motion": "হ্ৰাসকৃত গতি",
+    "language": "ভাষা",
+    "memory_match_instructions": "এই বস্তুবোৰ মনত ৰাখক।\nআপুনি কিছুমান বস্তু দেখিব।\nসেইবোৰ ক'ত আছে মনত ৰখাৰ চেষ্টা কৰক।",
+    "sequence_instructions": "আকৃতিবোৰ মনোযোগেৰে চাওক।\nতাৰ পিছত একেই ক্ৰমত পুনৰাবৃত্তি কৰক।",
+    "pattern_instructions": "আৰ্হিটো চাওক।\nপিছৰটো কি আহে বাছক।",
+    "high_performance": "বাঢ়িয়া! আপুনি {total} ৰ {correct} টা শুদ্ধ কৰিলে।",
+    "average_performance": "বাঢ়িয়া কৰিলে! আপুনি আজিৰ কাৰ্যকলাপ সম্পূৰ্ণ কৰিলে।",
+    "low_performance": "ভাল প্ৰচেষ্টা! প্ৰতিটো সেশ্বনেই অনুশীলনৰ এটা সুযোগ।",
+    "min": "মিনিট",
+    "sec": "ছেকেণ্ড"
+  }
+};
+
+
+/* storage.js — local persistence layer.
+   Wraps localStorage/sessionStorage. Never stores real PII —
+   only the anonymous patientId and non-identifying preferences/results. */
+
+const MC_KEYS = {
+  PATIENT: 'mc_patient',
+  PREFS: 'mc_prefs',
+  RESULTS: 'mc_results',
+  ACTIVE_SESSION: 'mc_active_session',
+  SESSION_COUNT: 'mc_session_count'
+};
+
+const MC_DEMO_DEFAULTS = {
+  DEMO_PATIENT_ID: 'MC-1001',
+  DEMO_LANGUAGE: 'en',
+  DEMO_DIFFICULTY: 'easy',
+  DEMO_DIFFICULTY_SOURCE: 'default'
+};
+
+const MCStorage = (() => {
+
+  function getPatient() {
+    const raw = localStorage.getItem(MC_KEYS.PATIENT);
+    if (raw) {
+      try { return JSON.parse(raw); } catch (e) { /* fall through */ }
+    }
+    const demo = {
+      patientId: MC_DEMO_DEFAULTS.DEMO_PATIENT_ID,
+      language: MC_DEMO_DEFAULTS.DEMO_LANGUAGE,
+      difficulty: MC_DEMO_DEFAULTS.DEMO_DIFFICULTY,
+      difficultySource: MC_DEMO_DEFAULTS.DEMO_DIFFICULTY_SOURCE
+    };
+    localStorage.setItem(MC_KEYS.PATIENT, JSON.stringify(demo));
+    return demo;
+  }
+
+  function setPatient(patient) {
+    localStorage.setItem(MC_KEYS.PATIENT, JSON.stringify(patient));
+  }
+
+  function getPrefs() {
+    const raw = localStorage.getItem(MC_KEYS.PREFS);
+    const defaults = { textSize: 'normal', contrast: 'normal', motion: 'normal' };
+    if (!raw) return defaults;
+    try { return { ...defaults, ...JSON.parse(raw) }; } catch (e) { return defaults; }
+  }
+
+  function setPrefs(prefs) {
+    localStorage.setItem(MC_KEYS.PREFS, JSON.stringify(prefs));
+  }
+
+  function getResults() {
+    const raw = localStorage.getItem(MC_KEYS.RESULTS);
+    if (!raw) return [];
+    try { return JSON.parse(raw); } catch (e) { return []; }
+  }
+
+  function saveGameResultLocally(result) {
+    const results = getResults();
+    const entry = { ...result, synced: false };
+    results.push(entry);
+    localStorage.setItem(MC_KEYS.RESULTS, JSON.stringify(results));
+    incrementSessionCount();
+    return entry;
+  }
+
+  function markResultsSynced(predicate) {
+    const results = getResults().map(r => predicate(r) ? { ...r, synced: true } : r);
+    localStorage.setItem(MC_KEYS.RESULTS, JSON.stringify(results));
+  }
+
+  function getPendingResults() {
+    return getResults().filter(r => !r.synced);
+  }
+
+  function getSessionCount() {
+    return parseInt(localStorage.getItem(MC_KEYS.SESSION_COUNT) || '0', 10);
+  }
+
+  function incrementSessionCount() {
+    const n = getSessionCount() + 1;
+    localStorage.setItem(MC_KEYS.SESSION_COUNT, String(n));
+    return n;
+  }
+
+  /* --- active in-progress session (for refresh recovery) --- */
+  function saveActiveSession(state) {
+    try {
+      sessionStorage.setItem(MC_KEYS.ACTIVE_SESSION, JSON.stringify(state));
+    } catch (e) { /* storage full or unavailable — ignore, non-critical */ }
+  }
+
+  function getActiveSession() {
+    const raw = sessionStorage.getItem(MC_KEYS.ACTIVE_SESSION);
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch (e) { return null; }
+  }
+
+  function clearActiveSession() {
+    sessionStorage.removeItem(MC_KEYS.ACTIVE_SESSION);
+  }
+
+  return {
+    getPatient, setPatient,
+    getPrefs, setPrefs,
+    getResults, saveGameResultLocally, markResultsSynced, getPendingResults,
+    getSessionCount, incrementSessionCount,
+    saveActiveSession, getActiveSession, clearActiveSession
+  };
+})();
+
+
+/* services/api.js — single place that knows how to talk to the backend.
+   No URLs are hardcoded inside game files; everything routes through here.
+   Falls back to local storage automatically when the backend is unavailable. */
+
+const MC_API_CONFIG = {
+  // Swap this for the real backend base URL once the backend team publishes it.
+  baseUrl: null, // e.g. 'https://api.mindcare.app'
+  endpoints: {
+    gameResults: '/api/game-results'
+  }
+};
+
+const MCApi = (() => {
+
+  async function submitGameResult(result) {
+    if (!MC_API_CONFIG.baseUrl) {
+      // No backend configured yet — behave as offline.
+      return MCStorage.saveGameResultLocally(result);
+    }
+    try {
+      const res = await fetch(MC_API_CONFIG.baseUrl + MC_API_CONFIG.endpoints.gameResults, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(result)
+      });
+      if (!res.ok) throw new Error('Server responded with ' + res.status);
+      const saved = { ...result, synced: true };
+      return saved;
+    } catch (err) {
+      console.warn('MindCare: backend unavailable, storing result locally.', err);
+      return MCStorage.saveGameResultLocally(result);
+    }
+  }
+
+  async function syncPendingResults() {
+    if (!MC_API_CONFIG.baseUrl) return { synced: 0, pending: MCStorage.getPendingResults().length };
+    const pending = MCStorage.getPendingResults();
+    let syncedCount = 0;
+    for (const result of pending) {
+      try {
+        const res = await fetch(MC_API_CONFIG.baseUrl + MC_API_CONFIG.endpoints.gameResults, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(result)
+        });
+        if (res.ok) syncedCount++;
+      } catch (e) { /* still offline, try again later */ }
+    }
+    if (syncedCount > 0) {
+      MCStorage.markResultsSynced(r => !r.synced);
+    }
+    return { synced: syncedCount, pending: pending.length - syncedCount };
+  }
+
+  return { submitGameResult, syncPendingResults };
+})();
+
+
+/* voice — i18n string formatting + speech synthesis (no fetch; locales are inline). */
+const MC_VOICE_LANG_MAP = { en: 'en-IN', hi: 'hi-IN', as: 'en-IN' };
+
+function formatString(str, vars) {
+  if (!str || !vars) return str;
+  return Object.keys(vars).reduce(
+    (acc, key) => acc.replace(new RegExp(`{${key}}`, 'g'), vars[key]),
+    str
+  );
+}
+
+function speak(text, language) {
+  if (!('speechSynthesis' in window) || !text) return;
+  try {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = MC_VOICE_LANG_MAP[language] || 'en-IN';
+    utterance.rate = 0.92;
+    utterance.pitch = 1.0;
+    window.speechSynthesis.speak(utterance);
+  } catch (e) {
+    console.warn('MindCare: speech synthesis unavailable.', e);
+  }
+}
+
+
+/* accessibility.js — applies stored accessibility preferences to <body>. */
+
+const MCAccessibility = (() => {
+
+  const TEXT_CLASS = { normal: '', large: 'text-large', extra_large: 'text-xl' };
+  const CONTRAST_CLASS = { normal: '', high: 'contrast-high' };
+  const MOTION_CLASS = { normal: '', reduced: 'motion-reduced' };
+
+  function apply(prefs) {
+    const p = prefs || MCStorage.getPrefs();
+    document.body.classList.remove('text-large', 'text-xl', 'contrast-high', 'motion-reduced');
+    if (TEXT_CLASS[p.textSize]) document.body.classList.add(TEXT_CLASS[p.textSize]);
+    if (CONTRAST_CLASS[p.contrast]) document.body.classList.add(CONTRAST_CLASS[p.contrast]);
+    if (MOTION_CLASS[p.motion]) document.body.classList.add(MOTION_CLASS[p.motion]);
+
+    // Respect the OS-level reduced motion setting too, even if the
+    // in-app preference hasn't been explicitly set.
+    const prefersReducedMotion = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) document.body.classList.add('motion-reduced');
+  }
+
+  function applyOnLoad() {
+    apply(MCStorage.getPrefs());
+  }
+
+  return { apply, applyOnLoad };
+})();
+
+document.addEventListener('DOMContentLoaded', MCAccessibility.applyOnLoad);
+
+
+/* timer.js — silent background timing. Never surfaces a countdown to the
+   patient; used only to compute response-time and session-length metrics. */
+
+class MCTimer {
+  constructor() {
+    this.sessionStart = null;
+    this.questionStart = null;
+    this.responseTimes = [];
+  }
+
+  startSession() {
+    this.sessionStart = Date.now();
+  }
+
+  startQuestion() {
+    this.questionStart = Date.now();
+  }
+
+  /** Call when the patient answers. Returns the response time in seconds. */
+  recordResponse() {
+    if (!this.questionStart) return 0;
+    const elapsedMs = Date.now() - this.questionStart;
+    const elapsedSec = Math.round((elapsedMs / 1000) * 10) / 10;
+    this.responseTimes.push(elapsedSec);
+    this.questionStart = null;
+    return elapsedSec;
+  }
+
+  averageResponseTime() {
+    if (!this.responseTimes.length) return 0;
+    const sum = this.responseTimes.reduce((a, b) => a + b, 0);
+    return Math.round((sum / this.responseTimes.length) * 10) / 10;
+  }
+
+  totalSessionSeconds() {
+    if (!this.sessionStart) return 0;
+    return Math.round((Date.now() - this.sessionStart) / 1000);
+  }
+
+  formattedSessionTime() {
+    const totalSec = this.totalSessionSeconds();
+    const min = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    return { min, sec, totalSec };
+  }
+}
+
+
+/* scoring.js — shared score/accuracy math + neutral performance feedback.
+   Never produces medical language; only neutral, encouraging performance text. */
+
+const MCScoring = (() => {
+
+  function calcAccuracy(correct, total) {
+    if (!total) return 0;
+    return Math.round((correct / total) * 100);
+  }
+
+  /** Simple, understandable scoring: base points per correct answer,
+   *  a small penalty for incorrect attempts, a modest speed bonus. */
+  function calcScore({ correct, incorrectAttempts, avgResponseSeconds, pointsPerCorrect = 100 }) {
+    let score = correct * pointsPerCorrect;
+    score -= (incorrectAttempts || 0) * 10;
+    if (avgResponseSeconds && avgResponseSeconds < 4) {
+      score += Math.round(correct * 5); // small, non-punitive speed bonus
+    }
+    return Math.max(0, score);
+  }
+
+  /** Returns one of three neutral, non-comparative feedback strings (i18n keys). */
+  function feedbackKeyFor(accuracy) {
+    if (accuracy >= 75) return 'high_performance';
+    if (accuracy >= 40) return 'average_performance';
+    return 'low_performance';
+  }
+
+  return { calcAccuracy, calcScore, feedbackKeyFor };
+})();
+
+
+/* gameEngine.js — shared engine used by all three games.
+   Owns: session object shape, timing, scoring, and submission to the API.
+   Individual games only need to report correct/incorrect answers as they
+   happen; the engine builds the structured result for the backend/AI team.
+
+   Difficulty is RECEIVED, never invented here — see startGame(). This
+   module does not adapt difficulty on its own (no in-game "AI"). */
+
+class MCGameEngine {
+  /**
+   * @param {Object} config
+   * @param {string} config.game - e.g. "memory_match"
+   * @param {string} config.difficulty - "easy" | "medium" | "hard"
+   * @param {string} config.difficultySource - "default" | "ai" | "caregiver"
+   * @param {number} config.totalQuestions
+   */
+  constructor(config) {
+    this.patient = MCStorage.getPatient();
+    this.game = config.game;
+    this.difficulty = config.difficulty || this.patient.difficulty || 'easy';
+    this.difficultySource = config.difficultySource || this.patient.difficultySource || 'default';
+    this.totalQuestions = config.totalQuestions;
+
+    this.timer = new MCTimer();
+    this.currentQuestion = 0;
+    this.correctAnswers = 0;
+    this.incorrectAnswers = 0;
+    this.attempts = 0;
+    this.startedAt = null;
+    this.completionStatus = 'in_progress';
+  }
+
+  start() {
+    this.startedAt = new Date().toISOString();
+    this.timer.startSession();
+    this.timer.startQuestion();
+    this.persist();
+  }
+
+  nextQuestion() {
+    this.currentQuestion += 1;
+    this.timer.startQuestion();
+    this.persist();
+  }
+
+  recordAnswer(isCorrect) {
+    this.attempts += 1;
+    if (isCorrect) this.correctAnswers += 1;
+    else this.incorrectAnswers += 1;
+    const responseTime = this.timer.recordResponse();
+    this.persist();
+    return responseTime;
+  }
+
+  progressPercent() {
+    if (!this.totalQuestions) return 0;
+    return Math.round((this.currentQuestion / this.totalQuestions) * 100);
+  }
+
+  /** Builds the structured result object. Never includes real name,
+   *  Aadhaar, address, phone, or medical history — only the anonymous id
+   *  and performance metrics. */
+  buildResult(completionStatus) {
+    const accuracy = MCScoring.calcAccuracy(this.correctAnswers, this.correctAnswers + this.incorrectAnswers);
+    const score = MCScoring.calcScore({
+      correct: this.correctAnswers,
+      incorrectAttempts: this.incorrectAnswers,
+      avgResponseSeconds: this.timer.averageResponseTime()
+    });
+    this.completionStatus = completionStatus;
+
+    return {
+      patientId: this.patient.patientId,
+      game: this.game,
+      difficulty: this.difficulty,
+      difficultySource: this.difficultySource,
+      score,
+      accuracy,
+      correctAnswers: this.correctAnswers,
+      incorrectAnswers: this.incorrectAnswers,
+      attempts: this.attempts,
+      responseTime: this.timer.averageResponseTime(),
+      completionStatus,
+      startedAt: this.startedAt,
+      completedAt: new Date().toISOString()
+    };
+  }
+
+  async finish(completionStatus = 'completed') {
+    const result = this.buildResult(completionStatus);
+    MCStorage.clearActiveSession();
+    const saved = await MCApi.submitGameResult(result);
+    return saved || result;
+  }
+
+  persist() {
+    MCStorage.saveActiveSession({
+      game: this.game,
+      difficulty: this.difficulty,
+      difficultySource: this.difficultySource,
+      currentQuestion: this.currentQuestion,
+      correctAnswers: this.correctAnswers,
+      incorrectAnswers: this.incorrectAnswers,
+      attempts: this.attempts,
+      startedAt: this.startedAt
+    });
+  }
+}
+
+/** Entry point matching the spec's startGame({ patientId, game, difficulty, language }). */
+function startGame({ patientId, game, difficulty, language, totalQuestions, difficultySource }) {
+  if (patientId || language) {
+    const patient = MCStorage.getPatient();
+    if (patientId) patient.patientId = patientId;
+    if (language) patient.language = language;
+    if (difficulty) patient.difficulty = difficulty;
+    MCStorage.setPatient(patient);
+  }
+  const engine = new MCGameEngine({ game, difficulty, difficultySource, totalQuestions });
+  engine.start();
+  return engine;
+}
+
+
+/* questionGenerator.js — reusable, randomized generators.
+   Difficulty controls complexity; nothing is hardcoded per-session so
+   repeated play doesn't show the same board/sequence/pattern. */
+
+const MC_OBJECT_ICONS = ['🍎', '📖', '🌸', '☕', '🔑', '🕐', '⚽', '🌳', '🎈', '🧦', '🧺', '🎁'];
+const MC_SEQUENCE_SHAPES = ['●', '▲', '■', '★', '◆', '⬤', '⬟'];
+const MC_PATTERN_SHAPES = ['○', '△', '□', '☆', '◇'];
+
+function mcShuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* --- Memory Match --- */
+const MC_MEMORY_CONFIG = {
+  easy:   { pairs: 4, revealSeconds: 5 },
+  medium: { pairs: 6, revealSeconds: 4 },
+  hard:   { pairs: 8, revealSeconds: 3 }
+};
+
+function generateMemoryQuestion(difficulty) {
+  const cfg = MC_MEMORY_CONFIG[difficulty] || MC_MEMORY_CONFIG.easy;
+  const icons = mcShuffle(MC_OBJECT_ICONS).slice(0, cfg.pairs);
+  const board = mcShuffle([...icons, ...icons]).map((icon, idx) => ({
+    id: idx,
+    icon,
+    state: 'hidden' // hidden | revealed | matched
+  }));
+  return { board, pairs: cfg.pairs, revealSeconds: cfg.revealSeconds };
+}
+
+/* --- Sequence Recall --- */
+const MC_SEQUENCE_CONFIG = {
+  easy:   { length: 3 },
+  medium: { length: 5 },
+  hard:   { length: 7 }
+};
+
+function generateSequenceQuestion(difficulty) {
+  const cfg = MC_SEQUENCE_CONFIG[difficulty] || MC_SEQUENCE_CONFIG.easy;
+  const pool = MC_SEQUENCE_SHAPES;
+  const sequence = [];
+  for (let i = 0; i < cfg.length; i++) {
+    sequence.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+  // Answer options: the shapes used, shuffled, for the "repeat by tapping" UI.
+  const options = mcShuffle(Array.from(new Set(pool.slice(0, Math.min(pool.length, cfg.length + 2)))));
+  return { sequence, options, length: cfg.length };
+}
+
+/* --- Pattern Recognition --- */
+const MC_PATTERN_CONFIG = {
+  easy: { generator: () => repeatingPattern(['A', 'B'], 5) },        // A B A B ?
+  medium: { generator: () => repeatingPattern(['A', 'B', 'C'], 6) }, // A B C A B ?
+  hard: { generator: () => repeatingPattern(['A', 'B', 'B', 'C'], 8) } // A B B C A B B ?
+};
+
+function repeatingPattern(unitLetters, totalLength) {
+  const letters = [];
+  for (let i = 0; i < totalLength; i++) {
+    letters.push(unitLetters[i % unitLetters.length]);
+  }
+  const answerLetter = unitLetters[totalLength % unitLetters.length];
+  return { letters, answerLetter, unitLetters };
+}
+
+function generatePatternQuestion(difficulty) {
+  const cfg = MC_PATTERN_CONFIG[difficulty] || MC_PATTERN_CONFIG.easy;
+  const { letters, answerLetter, unitLetters } = cfg.generator();
+
+  // Map abstract letters (A/B/C) to a randomized concrete shape set each
+  // time, so the same difficulty doesn't always look identical.
+  const shapePalette = mcShuffle(MC_PATTERN_SHAPES);
+  const letterToShape = {};
+  unitLetters.forEach((letter, i) => { letterToShape[letter] = shapePalette[i % shapePalette.length]; });
+
+  const displaySequence = letters.map(l => letterToShape[l]);
+  const correctShape = letterToShape[answerLetter];
+
+  // Build 3 options: the correct shape + 2 distractors from the palette.
+  const distractorPool = shapePalette.filter(s => s !== correctShape);
+  const options = mcShuffle([correctShape, ...mcShuffle(distractorPool).slice(0, 2)]);
+
+  return { displaySequence, correctShape, options };
+}
+
+
+/* games-js/memoryMatch.js — Memory Match game logic, UI-agnostic.
+   The HTML page owns rendering; this class owns state + rules. */
+
+class MemoryMatchGame {
+  constructor(difficulty) {
+    const q = generateMemoryQuestion(difficulty);
+    this.board = q.board;
+    this.totalPairs = q.pairs;
+    this.revealSeconds = q.revealSeconds;
+    this.matchedPairs = 0;
+    this.openIndices = [];
+    this.locked = false; // true while showing a mismatched pair briefly
+  }
+
+  /** Reveal all cards at the start, to be hidden after revealSeconds. */
+  revealAll() {
+    this.board.forEach(c => { if (c.state === 'hidden') c.state = 'revealed'; });
+  }
+
+  hideAllUnmatched() {
+    this.board.forEach(c => { if (c.state === 'revealed') c.state = 'hidden'; });
+  }
+
+  /** Attempt to flip a card. Returns { accepted, resultReady, isMatch, indices } */
+  flip(index) {
+    const card = this.board[index];
+    if (this.locked || card.state === 'matched' || card.state === 'revealed') {
+      return { accepted: false };
+    }
+    card.state = 'revealed';
+    this.openIndices.push(index);
+
+    if (this.openIndices.length < 2) {
+      return { accepted: true, resultReady: false };
+    }
+
+    const [i1, i2] = this.openIndices;
+    const isMatch = this.board[i1].icon === this.board[i2].icon;
+    if (isMatch) {
+      this.board[i1].state = 'matched';
+      this.board[i2].state = 'matched';
+      this.matchedPairs += 1;
+    } else {
+      this.locked = true; // caller should un-hide these two after a short delay
+    }
+    this.openIndices = [];
+    return { accepted: true, resultReady: true, isMatch, indices: [i1, i2] };
+  }
+
+  resolveMismatch(indices) {
+    indices.forEach(i => { if (this.board[i].state === 'revealed') this.board[i].state = 'hidden'; });
+    this.locked = false;
+  }
+
+  isComplete() {
+    return this.matchedPairs >= this.totalPairs;
+  }
+}
+
+
+/* games-js/sequenceRecall.js — Sequence Recall game logic, UI-agnostic. */
+
+const MC_SEQUENCE_TOTAL_TRIALS = 5;
+
+class SequenceRecallGame {
+  constructor(difficulty) {
+    this.difficulty = difficulty;
+    this.totalTrials = MC_SEQUENCE_TOTAL_TRIALS;
+    this.trialIndex = 0;
+    this.current = null;   // { sequence, options, length }
+    this.patientAnswer = [];
+  }
+
+  newTrial() {
+    this.current = generateSequenceQuestion(this.difficulty);
+    this.patientAnswer = [];
+    return this.current;
+  }
+
+  /** Patient taps one option in the reproduction phase. */
+  answerTap(shape) {
+    this.patientAnswer.push(shape);
+    const complete = this.patientAnswer.length >= this.current.sequence.length;
+    if (!complete) return { complete: false };
+
+    const isCorrect = this.current.sequence.every((s, i) => s === this.patientAnswer[i]);
+    return { complete: true, isCorrect };
+  }
+
+  advance() {
+    this.trialIndex += 1;
+  }
+
+  isComplete() {
+    return this.trialIndex >= this.totalTrials;
+  }
+}
+
+
+/* games-js/patternRecognition.js — Pattern Recognition game logic, UI-agnostic. */
+
+const MC_PATTERN_TOTAL_TRIALS = 6;
+
+class PatternRecognitionGame {
+  constructor(difficulty) {
+    this.difficulty = difficulty;
+    this.totalTrials = MC_PATTERN_TOTAL_TRIALS;
+    this.trialIndex = 0;
+    this.current = null; // { displaySequence, correctShape, options }
+  }
+
+  newTrial() {
+    this.current = generatePatternQuestion(this.difficulty);
+    return this.current;
+  }
+
+  answer(shape) {
+    const isCorrect = shape === this.current.correctShape;
+    return { isCorrect };
+  }
+
+  advance() {
+    this.trialIndex += 1;
+  }
+
+  isComplete() {
+    return this.trialIndex >= this.totalTrials;
+  }
+}
+
+
+/* ===================== Router + i18n + per-game controllers ===================== */
+
+function getLocale(lang){ return MC_LOCALES[lang] || MC_LOCALES.en; }
+
+let patient = MCStorage.getPatient();
+let locale = getLocale(patient.language);
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function applyTranslations(){
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const str = locale[key];
+    if (str == null) return;
+    el.innerHTML = str.split('\n').map(escapeHtml).join('<br>');
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+    const key = el.getAttribute('data-i18n-aria');
+    const str = locale[key];
+    if (str != null) el.setAttribute('aria-label', str);
+  });
+  document.title = `${locale.app_name} — MindCare`;
+}
+
+function refreshLocale(){
+  locale = getLocale(patient.language);
+  applyTranslations();
+}
+
+/* --- Navigation between views --- */
+const VIEW_ID = {
+  home: 'view-home', activities: 'view-activities', help: 'view-help', settings: 'view-settings',
+  mm: 'view-mm', sr: 'view-sr', pr: 'view-pr'
+};
+const TOP_LEVEL_VIEWS = ['home', 'activities', 'help', 'settings'];
+
+function navigateTo(view){
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  Object.keys(VIEW_ID).forEach(v => {
+    document.getElementById(VIEW_ID[v]).style.display = (v === view) ? '' : 'none';
+  });
+  document.getElementById('bottomNav').style.display = TOP_LEVEL_VIEWS.includes(view) ? '' : 'none';
+  document.querySelectorAll('.bottom-nav a').forEach(a => {
+    a.classList.toggle('active', a.getAttribute('data-nav') === view);
+  });
+  if (view === 'mm') resetMM();
+  if (view === 'sr') resetSR();
+  if (view === 'pr') resetPR();
+  if (view === 'home') updateHomeProgress();
+  window.scrollTo(0, 0);
+}
+
+const GAME_KEY_FROM_DATA = { 'memory-match': 'mm', 'sequence-recall': 'sr', 'pattern-recognition': 'pr' };
+
+function wireActivityCards(){
+  document.querySelectorAll('[data-game]').forEach(btn => {
+    btn.addEventListener('click', () => navigateTo(GAME_KEY_FROM_DATA[btn.getAttribute('data-game')]));
+  });
+}
+
+function wireBottomNav(){
+  document.querySelectorAll('.bottom-nav a').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      navigateTo(a.getAttribute('data-nav'));
+    });
+  });
+}
+
+function wireDoneButtons(){
+  document.querySelectorAll('[data-done-btn]').forEach(btn => {
+    btn.addEventListener('click', () => navigateTo('home'));
+  });
+}
+
+function updateHomeProgress(){
+  const count = MCStorage.getSessionCount();
+  const line = document.getElementById('progressLine');
+  if (line) line.textContent = formatString(locale.progress_sessions, { count });
+  const tag = document.getElementById('patientTag');
+  if (tag) tag.textContent = `Patient ${patient.patientId}`;
+}
+
+/* ===================== HOME / HELP wiring ===================== */
+function wireHomeAndHelp(){
+  const voiceHomeBtn = document.getElementById('voiceHomeBtn');
+  if (voiceHomeBtn) voiceHomeBtn.addEventListener('click', () => speak(locale.ready, patient.language));
+
+  const hearHelpBtn = document.getElementById('hearHelpBtn');
+  if (hearHelpBtn) hearHelpBtn.addEventListener('click', () => speak(locale.help_text, patient.language));
+}
+
+/* ===================== SETTINGS wiring ===================== */
+function wireSettings(){
+  const prefs = MCStorage.getPrefs();
+
+  function wireRow(rowId, currentValue, onSelect){
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    const buttons = row.querySelectorAll('.pill-btn');
+    buttons.forEach(btn => {
+      btn.setAttribute('aria-pressed', String(btn.getAttribute('data-value') === currentValue));
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', 'true');
+        onSelect(btn.getAttribute('data-value'));
+      });
+    });
+  }
+
+  wireRow('langRow', patient.language, (val) => {
+    patient.language = val;
+    MCStorage.setPatient(patient);
+    refreshLocale();
+    updateHomeProgress();
+  });
+
+  wireRow('textSizeRow', prefs.textSize, (val) => {
+    prefs.textSize = val; MCStorage.setPrefs(prefs); MCAccessibility.apply(prefs);
+  });
+  wireRow('contrastRow', prefs.contrast, (val) => {
+    prefs.contrast = val; MCStorage.setPrefs(prefs); MCAccessibility.apply(prefs);
+  });
+  wireRow('motionRow', prefs.motion, (val) => {
+    prefs.motion = val; MCStorage.setPrefs(prefs); MCAccessibility.apply(prefs);
+  });
+}
+
+
+
+/* ===================== MEMORY MATCH controller ===================== */
+let mmEngine, mmGame;
+
+function mmShowScreen(id){
+  ['mmInstructionsScreen','mmGameScreen','mmResultsScreen','mmCompleteScreen'].forEach(s => {
+    document.getElementById(s).style.display = (s === id) ? '' : 'none';
+  });
+  document.getElementById('mmPauseBtn').style.display = (id === 'mmGameScreen') ? '' : 'none';
+}
+
+function resetMM(){ mmShowScreen('mmInstructionsScreen'); }
+
+function mmRenderGrid(){
+  const grid = document.getElementById('mmMemoryGrid');
+  grid.innerHTML = '';
+  mmGame.board.forEach((card, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'mem-card';
+    btn.setAttribute('data-state', card.state);
+    btn.setAttribute('aria-label', card.state === 'hidden' ? 'Hidden card' : card.icon);
+    if (card.state !== 'hidden') btn.textContent = card.icon;
+    btn.disabled = card.state === 'matched';
+    btn.addEventListener('click', () => mmOnCardClick(idx));
+    grid.appendChild(btn);
+  });
+}
+
+function mmUpdateProgress(){
+  const pct = Math.round((mmGame.matchedPairs / mmGame.totalPairs) * 100);
+  document.getElementById('mmProgressFill').style.width = pct + '%';
+  document.getElementById('mmProgressPercentText').textContent = pct + '%';
+  document.getElementById('mmProgressText').textContent =
+    formatString(locale.question_of, { current: mmGame.matchedPairs, total: mmGame.totalPairs });
+}
+
+function mmShowFeedback(key, isError){
+  const el = document.getElementById('mmFeedbackBanner');
+  el.textContent = locale[key];
+  el.className = 'feedback-banner' + (isError ? ' incorrect' : '');
+  el.style.display = '';
+  speak(locale[key], patient.language);
+  clearTimeout(mmShowFeedback._t);
+  mmShowFeedback._t = setTimeout(() => { el.style.display = 'none'; }, 1600);
+}
+
+function mmOnCardClick(idx){
+  const res = mmGame.flip(idx);
+  if (!res.accepted) return;
+  mmRenderGrid();
+  if (!res.resultReady) return;
+
+  mmEngine.nextQuestion();
+  if (res.isMatch) {
+    mmEngine.recordAnswer(true);
+    mmShowFeedback('great_job', false);
+    mmUpdateProgress();
+    mmRenderGrid();
+    if (mmGame.isComplete()) setTimeout(mmFinishGame, 900);
+  } else {
+    mmEngine.recordAnswer(false);
+    mmShowFeedback('try_again', true);
+    setTimeout(() => { mmGame.resolveMismatch(res.indices); mmRenderGrid(); }, 900);
+  }
+}
+
+async function mmFinishGame(){
+  mmShowFeedback('matched_all', false);
+  const result = await mmEngine.finish('completed');
+  mmRenderResults(result);
+  setTimeout(() => mmShowScreen('mmResultsScreen'), 900);
+}
+
+function mmRenderResults(result){
+  document.getElementById('mmStatScore').textContent = result.score;
+  document.getElementById('mmStatAccuracy').textContent = result.accuracy + '%';
+  document.getElementById('mmStatCorrect').textContent = `${result.correctAnswers}/${result.correctAnswers + result.incorrectAnswers}`;
+  const t = mmEngine.timer.formattedSessionTime();
+  document.getElementById('mmStatTime').textContent = `${t.min}:${String(t.sec).padStart(2,'0')}`;
+  const fbKey = MCScoring.feedbackKeyFor(result.accuracy);
+  document.getElementById('mmResultFeedback').textContent = formatString(
+    locale[fbKey], { correct: result.correctAnswers, total: result.correctAnswers + result.incorrectAnswers }
+  );
+}
+
+function mmBeginGame(){
+  mmGame = new MemoryMatchGame(patient.difficulty);
+  mmEngine = startGame({
+    game: 'memory_match', difficulty: patient.difficulty, difficultySource: patient.difficultySource,
+    totalQuestions: mmGame.totalPairs
+  });
+  mmShowScreen('mmGameScreen');
+  mmGame.revealAll();
+  mmRenderGrid();
+  mmUpdateProgress();
+  setTimeout(() => { mmGame.hideAllUnmatched(); mmRenderGrid(); }, mmGame.revealSeconds * 1000);
+}
+
+function wireMM(){
+  document.getElementById('mmHearInstructionsBtn').addEventListener('click', () => speak(locale.memory_match_instructions, patient.language));
+  document.getElementById('mmStartGameBtn').addEventListener('click', mmBeginGame);
+  document.getElementById('mmPlayAgainBtn').addEventListener('click', mmBeginGame);
+  document.getElementById('mmChooseAnotherBtn').addEventListener('click', () => navigateTo('activities'));
+  document.getElementById('mmPauseBtn').addEventListener('click', () => { document.getElementById('mmPauseModal').style.display = 'flex'; });
+  document.getElementById('mmResumeBtn').addEventListener('click', () => { document.getElementById('mmPauseModal').style.display = 'none'; });
+  document.getElementById('mmExitBtn').addEventListener('click', () => {
+    if (document.getElementById('mmGameScreen').style.display === 'none') { navigateTo('activities'); return; }
+    document.getElementById('mmExitModal').style.display = 'flex';
+  });
+  document.getElementById('mmExitContinueBtn').addEventListener('click', () => { document.getElementById('mmExitModal').style.display = 'none'; });
+  document.getElementById('mmExitConfirmBtn').addEventListener('click', async () => {
+    if (mmEngine) await mmEngine.finish('abandoned');
+    navigateTo('activities');
+  });
+}
+
+
+/* ===================== SEQUENCE RECALL controller ===================== */
+let srEngine, srGame;
+
+function srShowScreen(id){
+  ['srInstructionsScreen','srGameScreen','srResultsScreen','srCompleteScreen'].forEach(s => {
+    document.getElementById(s).style.display = (s === id) ? '' : 'none';
+  });
+  document.getElementById('srPauseBtn').style.display = (id === 'srGameScreen') ? '' : 'none';
+}
+
+function resetSR(){ srShowScreen('srInstructionsScreen'); }
+
+function srUpdateProgress(){
+  const pct = Math.round((srGame.trialIndex / srGame.totalTrials) * 100);
+  document.getElementById('srProgressFill').style.width = pct + '%';
+  document.getElementById('srProgressPercentText').textContent = pct + '%';
+  document.getElementById('srProgressText').textContent =
+    formatString(locale.question_of, { current: Math.min(srGame.trialIndex + 1, srGame.totalTrials), total: srGame.totalTrials });
+}
+
+function srShowFeedback(key, isError){
+  const el = document.getElementById('srFeedbackBanner');
+  el.textContent = locale[key];
+  el.className = 'feedback-banner' + (isError ? ' incorrect' : '');
+  el.style.display = '';
+  speak(locale[key], patient.language);
+  clearTimeout(srShowFeedback._t);
+  srShowFeedback._t = setTimeout(() => { el.style.display = 'none'; }, 1500);
+}
+
+function srRenderSequence(dim){
+  const row = document.getElementById('srSequenceRow');
+  row.innerHTML = '';
+  srGame.current.sequence.forEach(shape => {
+    const div = document.createElement('div');
+    div.className = 'seq-item' + (dim ? ' dim' : '');
+    div.textContent = dim ? '' : shape;
+    row.appendChild(div);
+  });
+}
+
+function srRenderOptions(){
+  const grid = document.getElementById('srOptionGrid');
+  grid.innerHTML = '';
+  srGame.current.options.forEach(shape => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = shape;
+    btn.setAttribute('aria-label', shape);
+    btn.addEventListener('click', () => srOnTap(shape));
+    grid.appendChild(btn);
+  });
+}
+
+function srOnTap(shape){
+  const res = srGame.answerTap(shape);
+  if (!res.complete) return;
+
+  srEngine.nextQuestion();
+  document.getElementById('srOptionGrid').style.display = 'none';
+  srRenderSequence(false);
+
+  if (res.isCorrect) { srEngine.recordAnswer(true); srShowFeedback('correct', false); }
+  else { srEngine.recordAnswer(false); srShowFeedback('incorrect', true); }
+
+  srGame.advance();
+  srUpdateProgress();
+  setTimeout(() => { if (srGame.isComplete()) srFinishGame(); else srRunTrial(); }, 1500);
+}
+
+function srRunTrial(){
+  document.getElementById('srPhaseLabel').textContent = locale.take_your_time;
+  srGame.newTrial();
+  document.getElementById('srOptionGrid').style.display = 'none';
+  srRenderSequence(false);
+  setTimeout(() => {
+    srRenderSequence(true);
+    document.getElementById('srOptionGrid').style.display = '';
+    srRenderOptions();
+  }, 1800 + srGame.current.sequence.length * 350);
+}
+
+async function srFinishGame(){
+  const result = await srEngine.finish('completed');
+  srRenderResults(result);
+  srShowScreen('srResultsScreen');
+}
+
+function srRenderResults(result){
+  document.getElementById('srStatScore').textContent = result.score;
+  document.getElementById('srStatAccuracy').textContent = result.accuracy + '%';
+  document.getElementById('srStatCorrect').textContent = `${result.correctAnswers}/${result.correctAnswers + result.incorrectAnswers}`;
+  const t = srEngine.timer.formattedSessionTime();
+  document.getElementById('srStatTime').textContent = `${t.min}:${String(t.sec).padStart(2,'0')}`;
+  const fbKey = MCScoring.feedbackKeyFor(result.accuracy);
+  document.getElementById('srResultFeedback').textContent = formatString(
+    locale[fbKey], { correct: result.correctAnswers, total: result.correctAnswers + result.incorrectAnswers }
+  );
+}
+
+function srBeginGame(){
+  srGame = new SequenceRecallGame(patient.difficulty);
+  srEngine = startGame({
+    game: 'sequence_recall', difficulty: patient.difficulty, difficultySource: patient.difficultySource,
+    totalQuestions: srGame.totalTrials
+  });
+  srShowScreen('srGameScreen');
+  srUpdateProgress();
+  srRunTrial();
+}
+
+function wireSR(){
+  document.getElementById('srHearInstructionsBtn').addEventListener('click', () => speak(locale.sequence_instructions, patient.language));
+  document.getElementById('srStartGameBtn').addEventListener('click', srBeginGame);
+  document.getElementById('srPlayAgainBtn').addEventListener('click', srBeginGame);
+  document.getElementById('srChooseAnotherBtn').addEventListener('click', () => navigateTo('activities'));
+  document.getElementById('srPauseBtn').addEventListener('click', () => { document.getElementById('srPauseModal').style.display = 'flex'; });
+  document.getElementById('srResumeBtn').addEventListener('click', () => { document.getElementById('srPauseModal').style.display = 'none'; });
+  document.getElementById('srExitBtn').addEventListener('click', () => {
+    if (document.getElementById('srGameScreen').style.display === 'none') { navigateTo('activities'); return; }
+    document.getElementById('srExitModal').style.display = 'flex';
+  });
+  document.getElementById('srExitContinueBtn').addEventListener('click', () => { document.getElementById('srExitModal').style.display = 'none'; });
+  document.getElementById('srExitConfirmBtn').addEventListener('click', async () => {
+    if (srEngine) await srEngine.finish('abandoned');
+    navigateTo('activities');
+  });
+}
+
+
+/* ===================== PATTERN RECOGNITION controller ===================== */
+let prEngine, prGame;
+
+function prShowScreen(id){
+  ['prInstructionsScreen','prGameScreen','prResultsScreen','prCompleteScreen'].forEach(s => {
+    document.getElementById(s).style.display = (s === id) ? '' : 'none';
+  });
+  document.getElementById('prPauseBtn').style.display = (id === 'prGameScreen') ? '' : 'none';
+}
+
+function resetPR(){ prShowScreen('prInstructionsScreen'); }
+
+function prUpdateProgress(){
+  const pct = Math.round((prGame.trialIndex / prGame.totalTrials) * 100);
+  document.getElementById('prProgressFill').style.width = pct + '%';
+  document.getElementById('prProgressPercentText').textContent = pct + '%';
+  document.getElementById('prProgressText').textContent =
+    formatString(locale.question_of, { current: Math.min(prGame.trialIndex + 1, prGame.totalTrials), total: prGame.totalTrials });
+}
+
+function prShowFeedback(key, isError){
+  const el = document.getElementById('prFeedbackBanner');
+  el.textContent = locale[key];
+  el.className = 'feedback-banner' + (isError ? ' incorrect' : '');
+  el.style.display = '';
+  speak(locale[key], patient.language);
+  clearTimeout(prShowFeedback._t);
+  prShowFeedback._t = setTimeout(() => { el.style.display = 'none'; }, 1400);
+}
+
+function prRenderPattern(){
+  const row = document.getElementById('prPatternRow');
+  row.innerHTML = '';
+  prGame.current.displaySequence.forEach(shape => {
+    const div = document.createElement('div');
+    div.className = 'seq-item';
+    div.textContent = shape;
+    row.appendChild(div);
+  });
+  const q = document.createElement('div');
+  q.className = 'seq-item';
+  q.textContent = '?';
+  row.appendChild(q);
+}
+
+function prRenderOptions(){
+  const grid = document.getElementById('prOptionGrid');
+  grid.innerHTML = '';
+  prGame.current.options.forEach(shape => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = shape;
+    btn.setAttribute('aria-label', shape);
+    btn.addEventListener('click', () => prOnPick(shape, btn));
+    grid.appendChild(btn);
+  });
+}
+
+function prOnPick(shape, btnEl){
+  document.querySelectorAll('#prOptionGrid .option-btn').forEach(b => b.disabled = true);
+  const res = prGame.answer(shape);
+  prEngine.nextQuestion();
+
+  if (res.isCorrect) { prEngine.recordAnswer(true); btnEl.classList.add('correct'); prShowFeedback('correct', false); }
+  else { prEngine.recordAnswer(false); btnEl.classList.add('incorrect'); prShowFeedback('incorrect', true); }
+
+  prGame.advance();
+  prUpdateProgress();
+  setTimeout(() => { if (prGame.isComplete()) prFinishGame(); else prRunTrial(); }, 1300);
+}
+
+function prRunTrial(){
+  prGame.newTrial();
+  prRenderPattern();
+  prRenderOptions();
+}
+
+async function prFinishGame(){
+  const result = await prEngine.finish('completed');
+  prRenderResults(result);
+  prShowScreen('prResultsScreen');
+}
+
+function prRenderResults(result){
+  document.getElementById('prStatScore').textContent = result.score;
+  document.getElementById('prStatAccuracy').textContent = result.accuracy + '%';
+  document.getElementById('prStatCorrect').textContent = `${result.correctAnswers}/${result.correctAnswers + result.incorrectAnswers}`;
+  const t = prEngine.timer.formattedSessionTime();
+  document.getElementById('prStatTime').textContent = `${t.min}:${String(t.sec).padStart(2,'0')}`;
+  const fbKey = MCScoring.feedbackKeyFor(result.accuracy);
+  document.getElementById('prResultFeedback').textContent = formatString(
+    locale[fbKey], { correct: result.correctAnswers, total: result.correctAnswers + result.incorrectAnswers }
+  );
+}
+
+function prBeginGame(){
+  prGame = new PatternRecognitionGame(patient.difficulty);
+  prEngine = startGame({
+    game: 'pattern_recognition', difficulty: patient.difficulty, difficultySource: patient.difficultySource,
+    totalQuestions: prGame.totalTrials
+  });
+  prShowScreen('prGameScreen');
+  prUpdateProgress();
+  prRunTrial();
+}
+
+function wirePR(){
+  document.getElementById('prHearInstructionsBtn').addEventListener('click', () => speak(locale.pattern_instructions, patient.language));
+  document.getElementById('prStartGameBtn').addEventListener('click', prBeginGame);
+  document.getElementById('prPlayAgainBtn').addEventListener('click', prBeginGame);
+  document.getElementById('prChooseAnotherBtn').addEventListener('click', () => navigateTo('activities'));
+  document.getElementById('prPauseBtn').addEventListener('click', () => { document.getElementById('prPauseModal').style.display = 'flex'; });
+  document.getElementById('prResumeBtn').addEventListener('click', () => { document.getElementById('prPauseModal').style.display = 'none'; });
+  document.getElementById('prExitBtn').addEventListener('click', () => {
+    if (document.getElementById('prGameScreen').style.display === 'none') { navigateTo('activities'); return; }
+    document.getElementById('prExitModal').style.display = 'flex';
+  });
+  document.getElementById('prExitContinueBtn').addEventListener('click', () => { document.getElementById('prExitModal').style.display = 'none'; });
+  document.getElementById('prExitConfirmBtn').addEventListener('click', async () => {
+    if (prEngine) await prEngine.finish('abandoned');
+    navigateTo('activities');
+  });
+}
+
+
+/* ===================== App init ===================== */
+document.addEventListener('DOMContentLoaded', () => {
+  MCAccessibility.applyOnLoad();
+  applyTranslations();
+  wireActivityCards();
+  wireBottomNav();
+  wireDoneButtons();
+  wireHomeAndHelp();
+  wireSettings();
+  wireMM();
+  wireSR();
+  wirePR();
+  updateHomeProgress();
+  navigateTo('home');
+});
+
+</script>
+</body>
+</html>
